@@ -1,0 +1,267 @@
+/**
+ * Mindful Twitch Spending - Overlay Styles
+ *
+ * Uses CSS custom properties for easy theming
+ * Designed to be visible and intentional, not easily dismissed
+ */
+
+/* CSS Variables */
+:root {
+  --mts-primary: #9146ff;
+  --mts-primary-dark: #772ce8;
+  --mts-danger: #eb0400;
+  --mts-danger-dark: #c00;
+  --mts-success: #00c853;
+  --mts-bg-dark: #18181b;
+  --mts-bg-card: #1f1f23;
+  --mts-text: #efeff1;
+  --mts-text-muted: #adadb8;
+  --mts-border: #3d3d42;
+  --mts-overlay-bg: rgba(0, 0, 0, 0.85);
+  --mts-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --mts-radius: 8px;
+}
+
+/* Overlay backdrop */
+.mts-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--mts-overlay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  animation: mts-fadeIn 0.2s ease-out;
+}
+
+@keyframes mts-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal container */
+.mts-modal {
+  background: var(--mts-bg-card);
+  border: 1px solid var(--mts-border);
+  border-radius: var(--mts-radius);
+  box-shadow: var(--mts-shadow);
+  width: 100%;
+  max-width: 420px;
+  margin: 20px;
+  animation: mts-slideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes mts-slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header section */
+.mts-header {
+  background: linear-gradient(135deg, var(--mts-primary) 0%, var(--mts-primary-dark) 100%);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.mts-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.mts-title {
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Content section */
+.mts-content {
+  padding: 24px 20px;
+}
+
+.mts-price-section {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--mts-border);
+}
+
+.mts-label {
+  color: var(--mts-text-muted);
+  font-size: 14px;
+  margin: 0 0 8px 0;
+}
+
+.mts-price {
+  color: var(--mts-text);
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.mts-price-note {
+  color: #ffa500;
+  font-size: 12px;
+  margin: 8px 0 0 0;
+  font-style: italic;
+}
+
+/* Cost breakdown section */
+.mts-cost-breakdown {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--mts-border);
+}
+
+.mts-cost-line {
+  color: var(--mts-text-muted);
+  font-size: 14px;
+  margin: 0 0 6px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.mts-cost-line:last-child {
+  margin-bottom: 0;
+}
+
+.mts-cost-label {
+  color: var(--mts-text-muted);
+}
+
+.mts-cost-value {
+  color: var(--mts-text);
+  font-weight: 600;
+}
+
+.mts-cost-hours {
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--mts-primary);
+}
+
+.mts-cost-hours strong {
+  color: var(--mts-text);
+  font-weight: 700;
+}
+
+/* Info section */
+.mts-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.mts-info p {
+  color: var(--mts-text-muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.mts-info strong {
+  color: var(--mts-text);
+}
+
+/* Message */
+.mts-message {
+  color: var(--mts-text);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+  padding: 16px;
+  background: var(--mts-bg-dark);
+  border-radius: var(--mts-radius);
+}
+
+/* Action buttons */
+.mts-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--mts-bg-dark);
+  border-top: 1px solid var(--mts-border);
+}
+
+.mts-btn {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--mts-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mts-btn:focus {
+  outline: 2px solid var(--mts-primary);
+  outline-offset: 2px;
+}
+
+.mts-btn-cancel {
+  background: var(--mts-success);
+  color: white;
+}
+
+.mts-btn-cancel:hover {
+  background: #00a344;
+  transform: translateY(-1px);
+}
+
+.mts-btn-proceed {
+  background: transparent;
+  color: var(--mts-text-muted);
+  border: 1px solid var(--mts-border);
+}
+
+.mts-btn-proceed:hover {
+  background: var(--mts-danger);
+  color: white;
+  border-color: var(--mts-danger);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mts-modal {
+    margin: 10px;
+  }
+
+  .mts-price {
+    font-size: 28px;
+  }
+
+  .mts-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mts-actions {
+    flex-direction: column;
+  }
+}

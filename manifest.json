@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Mindful Twitch Spending",
+  "version": "0.2.5",
+  "description": "Create intentional friction before Twitch purchases to encourage mindful spending",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.twitch.tv/*"
+  ],
+  "background": {
+    "service_worker": "serviceWorker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.twitch.tv/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Mindful Twitch Spending - Click for settings"
+  },
+  "options_page": "options.html"
+}
