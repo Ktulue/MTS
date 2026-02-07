@@ -1,7 +1,12 @@
 /**
  * Centralized logging system for MTS
- * Uses a read-modify-write pattern to prevent logs from different contexts
- * (content script, options page) from overwriting each other.
+ *
+ * Two separate log stores:
+ *   - Extension Log: friction flow events, button detection, overlay interactions
+ *   - Settings Log:  settings saves, resets, custom item CRUD
+ *
+ * Uses a read-modify-write pattern with debounced saves to prevent
+ * concurrent writes from overwriting each other.
  */
 
 export interface LogEntry {
@@ -12,18 +17,21 @@ export interface LogEntry {
 }
 
 const MAX_LOGS = 200;
-const STORAGE_KEY = 'mtsLogs';
+const EXTENSION_LOG_KEY = 'mtsExtensionLog';
+const SETTINGS_LOG_KEY = 'mtsSettingsLog';
 const VERSION_KEY = 'mtsVersion';
 
-/** Buffer of entries waiting to be saved */
-let pendingEntries: LogEntry[] = [];
+/** Pending buffers — one per log store */
+let pendingExtension: LogEntry[] = [];
+let pendingSettings: LogEntry[] = [];
+
 let debugMode = true;
-let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+let saveExtTimeout: ReturnType<typeof setTimeout> | null = null;
+let saveSetTimeout: ReturnType<typeof setTimeout> | null = null;
 let currentVersion: string = '0.0.0';
-let initialized = false;
 
 /**
- * Set the current version (called from index.ts)
+ * Set the current version (called from index.ts / options.ts)
  */
 export function setVersion(version: string): void {
   currentVersion = version;
@@ -42,140 +50,169 @@ function getTimestamp(): string {
 }
 
 /**
- * Save pending entries to chrome.storage (debounced, read-modify-write)
+ * Debounced save for a specific log store
  */
-function scheduleSave(): void {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
-  saveTimeout = setTimeout(async () => {
-    if (pendingEntries.length === 0) return;
+function scheduleSave(
+  storageKey: string,
+  getPending: () => LogEntry[],
+  clearPending: () => void,
+  getTimer: () => ReturnType<typeof setTimeout> | null,
+  setTimer: (t: ReturnType<typeof setTimeout> | null) => void,
+): void {
+  const existing = getTimer();
+  if (existing) clearTimeout(existing);
+
+  setTimer(setTimeout(async () => {
+    const entries = getPending();
+    if (entries.length === 0) return;
 
     try {
-      // Read current logs from storage
-      const result = await chrome.storage.local.get(STORAGE_KEY);
-      let storedLogs: LogEntry[] = result[STORAGE_KEY] || [];
-
-      // Append pending entries
-      storedLogs = [...storedLogs, ...pendingEntries];
-
-      // Keep only the most recent logs
-      if (storedLogs.length > MAX_LOGS) {
-        storedLogs = storedLogs.slice(-MAX_LOGS);
+      const result = await chrome.storage.local.get(storageKey);
+      let stored: LogEntry[] = result[storageKey] || [];
+      stored = [...stored, ...entries];
+      if (stored.length > MAX_LOGS) {
+        stored = stored.slice(-MAX_LOGS);
       }
-
-      // Save back to storage
-      await chrome.storage.local.set({ [STORAGE_KEY]: storedLogs });
-
-      // Clear pending entries
-      pendingEntries = [];
+      await chrome.storage.local.set({ [storageKey]: stored });
+      clearPending();
     } catch (e) {
       console.error('[MTS] Failed to save logs:', e);
     }
-  }, 100); // Debounce: save 100ms after last log
+  }, 100));
+}
+
+function scheduleExtensionSave(): void {
+  scheduleSave(
+    EXTENSION_LOG_KEY,
+    () => pendingExtension,
+    () => { pendingExtension = []; },
+    () => saveExtTimeout,
+    (t) => { saveExtTimeout = t; },
+  );
+}
+
+function scheduleSettingsSave(): void {
+  scheduleSave(
+    SETTINGS_LOG_KEY,
+    () => pendingSettings,
+    () => { pendingSettings = []; },
+    () => saveSetTimeout,
+    (t) => { saveSetTimeout = t; },
+  );
 }
 
 /**
- * Add a log entry to the pending buffer
+ * Add entry to extension log buffer
  */
-function addLog(level: LogEntry['level'], message: string, data?: unknown): void {
-  const entry: LogEntry = {
-    timestamp: getTimestamp(),
-    level,
-    message,
-    data,
-  };
-
-  pendingEntries.push(entry);
-
-  // Schedule save to storage
-  scheduleSave();
+function addExtensionLog(level: LogEntry['level'], message: string, data?: unknown): void {
+  pendingExtension.push({ timestamp: getTimestamp(), level, message, data });
+  scheduleExtensionSave();
 }
 
 /**
- * Initialize logger and check version
- * Clears logs if version has changed
+ * Add entry to settings log buffer
  */
-export async function loadLogs(): Promise<LogEntry[]> {
+function addSettingsLog(message: string, data?: unknown): void {
+  pendingSettings.push({ timestamp: getTimestamp(), level: 'log', message, data });
+  scheduleSettingsSave();
+}
+
+// ── Initialization ──────────────────────────────────────────────────────
+
+/**
+ * Initialize logger and check version.
+ * Clears both logs if version has changed.
+ */
+export async function loadLogs(): Promise<void> {
   try {
-    const result = await chrome.storage.local.get([STORAGE_KEY, VERSION_KEY]);
+    const result = await chrome.storage.local.get([EXTENSION_LOG_KEY, SETTINGS_LOG_KEY, VERSION_KEY]);
     const storedVersion = result[VERSION_KEY] || '0.0.0';
-    let storedLogs: LogEntry[] = result[STORAGE_KEY] || [];
 
-    // Check if version changed - clear logs if so
     if (storedVersion !== currentVersion && currentVersion !== '0.0.0') {
-      console.log(`[MTS] Version changed from ${storedVersion} to ${currentVersion} - clearing logs`);
-      storedLogs = [];
+      console.log(`[MTS] Version changed from ${storedVersion} to ${currentVersion} — clearing logs`);
       await chrome.storage.local.set({
-        [STORAGE_KEY]: [],
-        [VERSION_KEY]: currentVersion
+        [EXTENSION_LOG_KEY]: [],
+        [SETTINGS_LOG_KEY]: [],
+        [VERSION_KEY]: currentVersion,
       });
     } else if (storedVersion !== currentVersion) {
-      // Update stored version if needed
       await chrome.storage.local.set({ [VERSION_KEY]: currentVersion });
     }
-
-    initialized = true;
-    return storedLogs;
   } catch (e) {
     console.error('[MTS] Failed to load logs:', e);
-    initialized = true;
+  }
+}
+
+// ── Getters ─────────────────────────────────────────────────────────────
+
+export async function getExtensionLogs(): Promise<LogEntry[]> {
+  try {
+    const result = await chrome.storage.local.get(EXTENSION_LOG_KEY);
+    return result[EXTENSION_LOG_KEY] || [];
+  } catch (e) {
+    console.error('[MTS] Failed to get extension logs:', e);
     return [];
   }
 }
 
-/**
- * Clear all logs
- */
-export function clearLogs(): void {
-  pendingEntries = [];
+export async function getSettingsLogs(): Promise<LogEntry[]> {
   try {
-    chrome.storage.local.set({ [STORAGE_KEY]: [] });
+    const result = await chrome.storage.local.get(SETTINGS_LOG_KEY);
+    return result[SETTINGS_LOG_KEY] || [];
   } catch (e) {
-    console.error('[MTS] Failed to clear logs:', e);
-  }
-}
-
-/**
- * Get current logs from storage
- */
-export async function getLogs(): Promise<LogEntry[]> {
-  try {
-    const result = await chrome.storage.local.get(STORAGE_KEY);
-    return result[STORAGE_KEY] || [];
-  } catch (e) {
-    console.error('[MTS] Failed to get logs:', e);
+    console.error('[MTS] Failed to get settings logs:', e);
     return [];
   }
 }
 
-/**
- * Set debug mode
- */
+// ── Clearers ────────────────────────────────────────────────────────────
+
+export function clearExtensionLogs(): void {
+  pendingExtension = [];
+  try { chrome.storage.local.set({ [EXTENSION_LOG_KEY]: [] }); } catch (e) {
+    console.error('[MTS] Failed to clear extension logs:', e);
+  }
+}
+
+export function clearSettingsLogs(): void {
+  pendingSettings = [];
+  try { chrome.storage.local.set({ [SETTINGS_LOG_KEY]: [] }); } catch (e) {
+    console.error('[MTS] Failed to clear settings logs:', e);
+  }
+}
+
+// ── Debug mode ──────────────────────────────────────────────────────────
+
 export function setDebugMode(enabled: boolean): void {
   debugMode = enabled;
 }
 
-/**
- * Log functions
- */
+// ── Extension log functions ─────────────────────────────────────────────
+
 export function log(message: string, data?: unknown): void {
   console.log('[MTS]', message, data !== undefined ? data : '');
-  addLog('log', message, data);
+  addExtensionLog('log', message, data);
 }
 
 export function debug(message: string, data?: unknown): void {
   if (!debugMode) return;
   console.log('[MTS DEBUG]', message, data !== undefined ? data : '');
-  addLog('debug', message, data);
+  addExtensionLog('debug', message, data);
 }
 
 export function error(message: string, data?: unknown): void {
   console.error('[MTS ERROR]', message, data !== undefined ? data : '');
-  addLog('error', message, data);
+  addExtensionLog('error', message, data);
 }
 
 export function warn(message: string, data?: unknown): void {
   console.warn('[MTS WARN]', message, data !== undefined ? data : '');
-  addLog('warn', message, data);
+  addExtensionLog('warn', message, data);
+}
+
+// ── Settings log function ───────────────────────────────────────────────
+
+export function settingsLog(message: string, data?: unknown): void {
+  console.log('[MTS SETTINGS]', message, data !== undefined ? data : '');
+  addSettingsLog(message, data);
 }

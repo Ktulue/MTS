@@ -13,7 +13,7 @@ import { log, debug, error, setVersion, loadLogs } from '../shared/logger';
 import './styles.css';
 
 /** Current extension version */
-const VERSION = '0.1.16';
+const VERSION = '0.2.21';
 
 // Set version immediately so logger can check for updates
 setVersion(VERSION);
@@ -59,7 +59,8 @@ function scanForButtons(): void {
   const selectors = [
     '[data-a-target="gift-button"]',
     '[data-a-target="gift-sub-confirm-button"]',
-    '[data-a-target="bits-button"]',
+    '[data-a-target="top-nav-get-bits-button"]',
+    '[data-a-target^="bits-purchase-button"]',
   ];
 
   // Keywords we intercept (gifts, bits, and subscription management)
@@ -96,7 +97,7 @@ function scanForButtons(): void {
     const dataTarget = (btn.getAttribute('data-a-target') || '').toLowerCase();
 
     const hasKeyword = interceptKeywords.some(kw => labelText.includes(kw) || ariaLabel.includes(kw));
-    const hasDataTarget = dataTarget.includes('gift') || dataTarget === 'bits-button';
+    const hasDataTarget = dataTarget.includes('gift') || dataTarget === 'top-nav-get-bits-button';
 
     if (hasKeyword || hasDataTarget) {
       interceptCount++;

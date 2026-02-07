@@ -13,8 +13,17 @@ const SELECTORS = {
   giftSubModal: '[data-a-target="gift-sub-modal"]',
   giftSubConfirmButton: '[data-a-target="gift-sub-confirm-button"]',
 
-  // Bits purchase (top nav "Get Bits" button — opens USD purchase modal)
-  bitsButton: '[data-a-target="top-nav-get-bits-button"]',
+  // BLOCK: top nav "Get Bits" button — opens USD purchase modal
+  bitsButton: 'button[data-a-target="top-nav-get-bits-button"], button[aria-label="Bits"]',
+
+  // BLOCK: Bits purchase buttons inside the popover (100, 500, 1500, 5000, 10000, 25000)
+  bitsPurchaseButton: 'button[data-a-target^="bits-purchase-button"]',
+
+  // Bits purchase popover dialog
+  bitsPopover: 'div[aria-label="Bits"][role="dialog"]',
+
+  // ALLOW: Cheer button — uses already-owned Bits, not real money
+  cheerButton: 'button[data-a-target="bits-button"], button[aria-label="Cheer"]',
 
   // New Twitch button label (2025+)
   coreButtonLabel: '[data-a-target="tw-core-button-label-text"]',
@@ -64,32 +73,39 @@ const IGNORE_LABELS = [
 ];
 
 /**
- * Determines the type of purchase based on the clicked element
- * Returns a specific type based on the actual button text
+ * Determines the type of purchase based on the clicked element.
+ * Type is identified by the trigger source/selector first, then falls
+ * back to keyword and text-based detection.  This ensures the Type
+ * field never shows a price string.
  */
 function determinePurchaseType(element: HTMLElement): PurchaseType {
-  // Get the specific button label text
-  const labelText = getButtonLabelText(element);
+  const dataTarget = (element.getAttribute('data-a-target') || '');
   const ariaLabel = element.getAttribute('aria-label') || '';
 
-  // Clean up the text - remove time-sensitive info like "(5 hours left)"
-  let cleanText = labelText
-    .replace(/\(\d+\s*(hours?|minutes?|days?)\s*left\)/gi, '')
-    .replace(/\d+%\s*off\s*/gi, '')
-    .trim();
+  // ── 1. Selector-based detection (highest priority) ──────────────
 
-  // If we have a clean, short text, capitalize it nicely and use it
-  if (cleanText && cleanText.length <= 30) {
-    // Capitalize first letter of each word
-    return cleanText.replace(/\b\w/g, c => c.toUpperCase());
+  // Bits: top-nav "Get Bits" button
+  if (dataTarget === 'top-nav-get-bits-button' || ariaLabel.toLowerCase() === 'bits') {
+    return 'Bits';
   }
 
-  // If aria-label is more concise, use it
-  if (ariaLabel && ariaLabel.length <= 30) {
-    return ariaLabel;
+  // Bits: purchase tier button inside popover (bits-purchase-button-5000, etc.)
+  const bitsTierMatch = dataTarget.match(/^bits-purchase-button-(\d+)/);
+  if (bitsTierMatch) {
+    return `Bits (${Number(bitsTierMatch[1]).toLocaleString()})`;
   }
 
-  // Fallback to category-based detection
+  // Gift sub buttons
+  if (dataTarget === 'gift-button' || dataTarget === 'gift-sub-confirm-button') {
+    return 'Gift A Sub';
+  }
+  if (dataTarget.includes('gift')) {
+    return 'Gift';
+  }
+
+  // ── 2. Keyword-based detection ──────────────────────────────────
+
+  const labelText = getButtonLabelText(element);
   const lowerText = labelText.toLowerCase();
 
   if (lowerText.includes('gift turbo')) {
@@ -98,18 +114,27 @@ function determinePurchaseType(element: HTMLElement): PurchaseType {
   if (lowerText.includes('community gift')) {
     return 'Community Gift';
   }
-  if (lowerText.includes('gift sub') || lowerText.includes('gift a sub')) {
-    return 'Gift Subs';
+  if (lowerText.includes('gift') && lowerText.includes('sub')) {
+    return 'Gift A Sub';
   }
   if (lowerText.includes('get bits') || lowerText.includes('buy bits')) {
-    return 'Get Bits';
+    return 'Bits';
+  }
+  if (lowerText.includes('resubscribe')) {
+    return 'Resubscribe';
+  }
+  if (lowerText.includes('elevate')) {
+    return 'Elevate Subscription';
   }
   if (lowerText.includes('manage') && lowerText.includes('sub')) {
     return 'Manage Subscription';
   }
+  if (lowerText.includes('subscribe')) {
+    return 'Subscribe';
+  }
+
   // Combo pattern: "Send X Combo, Y Bits"
   if (lowerText.includes('combo,') && lowerText.includes('bits')) {
-    // Extract combo name and bits: "send hearts combo, 5 bits" -> "Hearts Combo (5 Bits)"
     const comboMatch = lowerText.match(/send\s+(.+?)\s+combo,\s*([\d,]+)\s*bits/i);
     if (comboMatch) {
       const comboName = comboMatch[1].replace(/\b\w/g, c => c.toUpperCase());
@@ -119,10 +144,27 @@ function determinePurchaseType(element: HTMLElement): PurchaseType {
     return 'Combo';
   }
 
-  // Last resort: return truncated text or generic "Purchase"
-  if (labelText.length > 0) {
-    const truncated = labelText.substring(0, 25) + (labelText.length > 25 ? '...' : '');
-    return truncated.replace(/\b\w/g, c => c.toUpperCase());
+  // Inside one-tap-store → Combo
+  if (element.closest('#one-tap-store-id')) {
+    return 'Combo';
+  }
+
+  // ── 3. Text-based fallback (strip prices first) ─────────────────
+
+  // Remove dollar amounts and bits counts so they never leak into the type
+  const cleanText = labelText
+    .replace(/\$[\d,]+(?:\.\d{2})?/g, '')
+    .replace(/[\d,]+\s*bits/gi, '')
+    .replace(/\(\d+\s*(hours?|minutes?|days?)\s*left\)/gi, '')
+    .replace(/\d+%\s*off\s*/gi, '')
+    .trim();
+
+  if (cleanText && cleanText.length > 0 && cleanText.length <= 30) {
+    return cleanText.replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  if (ariaLabel && ariaLabel.length <= 30) {
+    return ariaLabel;
   }
 
   return 'Purchase';
@@ -307,6 +349,12 @@ export function isPurchaseButton(element: HTMLElement | null): boolean {
     return true;
   }
 
+  // BLOCK: Bits purchase buttons inside the popover (bits-purchase-button-100, bits-purchase-button-500, etc.)
+  if (dataTarget.startsWith('bits-purchase-button')) {
+    debug('isPurchaseButton: MATCH via Bits purchase button in popover', elementInfo);
+    return true;
+  }
+
   // Check if element has gift-related data-a-target
   if (dataTarget.includes('gift')) {
     debug('isPurchaseButton: MATCH via data-a-target (gift)', elementInfo);
@@ -381,6 +429,15 @@ export function setupModalObserver(callback: (modal: HTMLElement) => void): Muta
           // Check if the added node is a modal
           if (node.matches('[role="dialog"]') || node.querySelector('[role="dialog"]')) {
             callback(node);
+          }
+
+          // Check for Bits purchase popover
+          const bitsPopover = node.matches(SELECTORS.bitsPopover)
+            ? node
+            : node.querySelector(SELECTORS.bitsPopover);
+          if (bitsPopover) {
+            const purchaseButtons = bitsPopover.querySelectorAll(SELECTORS.bitsPurchaseButton);
+            log('Bits purchase popover detected', { purchaseButtonCount: purchaseButtons.length });
           }
 
           // Check for gift sub modal specifically

@@ -90,7 +90,8 @@
       font-size: 14px;
     }
 
-    input[type="number"] {
+    input[type="number"],
+    input[type="text"] {
       background: #18181b;
       border: 1px solid #3d3d42;
       border-radius: 4px;
@@ -102,13 +103,29 @@
       transition: border-color 0.2s;
     }
 
-    input[type="number"]:focus {
+    input[type="number"]:focus,
+    input[type="text"]:focus {
       border-color: #9146ff;
     }
 
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
       opacity: 1;
+    }
+
+    select {
+      background: #18181b;
+      border: 1px solid #3d3d42;
+      border-radius: 4px;
+      color: #efeff1;
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus {
+      border-color: #9146ff;
     }
 
     .help-text {
@@ -205,15 +222,188 @@
       text-align: center;
       margin-top: 24px;
     }
+
+    /* Toggle switch */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+    }
+
+    .toggle-row + .toggle-row {
+      border-top: 1px solid #2a2a2e;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .toggle-emoji {
+      font-size: 18px;
+    }
+
+    .toggle-name {
+      color: #efeff1;
+    }
+
+    .toggle-price {
+      color: #adadb8;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #3d3d42;
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: #efeff1;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: #9146ff;
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(18px);
+    }
+
+    /* Custom item list */
+    .custom-items-list {
+      margin-top: 12px;
+    }
+
+    .custom-item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #2a2a2e;
+    }
+
+    .custom-item-row:last-child {
+      border-bottom: none;
+    }
+
+    .custom-item-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid #3d3d42;
+      color: #adadb8;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: #3d3d42;
+      color: #efeff1;
+    }
+
+    .btn-icon.danger:hover {
+      background: rgba(235, 4, 0, 0.2);
+      border-color: #eb0400;
+      color: #eb0400;
+    }
+
+    /* Add custom item form */
+    .add-item-form {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: #18181b;
+      border: 1px solid #3d3d42;
+      border-radius: 6px;
+    }
+
+    .add-item-form.visible {
+      display: block;
+    }
+
+    .add-item-form .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .add-item-form .form-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .add-item-form input[type="text"],
+    .add-item-form input[type="number"] {
+      width: auto;
+      flex: 1;
+      font-size: 13px;
+      padding: 8px 10px;
+    }
+
+    .emoji-input {
+      width: 50px !important;
+      flex: 0 0 50px !important;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    /* Subsection for nested settings */
+    .subsection {
+      padding-left: 12px;
+      margin-top: 8px;
+      border-left: 2px solid #3d3d42;
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <span class="header-icon">🛡️</span>
+    <span class="header-icon">&#x1F6E1;&#xFE0F;</span>
     <h1 class="header-title">MTS Settings</h1>
   </div>
 
   <div class="container">
+    <!-- Income Settings -->
     <div class="section">
       <h2 class="section-title">Income Settings</h2>
 
@@ -228,6 +418,7 @@
       </div>
     </div>
 
+    <!-- Tax Settings -->
     <div class="section">
       <h2 class="section-title">Tax Settings</h2>
 
@@ -241,6 +432,138 @@
       </div>
     </div>
 
+    <!-- Comparison Items -->
+    <div class="section">
+      <h2 class="section-title">Comparison Items</h2>
+      <p class="help-text" style="margin-bottom: 12px;">
+        Show relatable comparisons on the friction modal (e.g., "That's 16 Costco glizzies")
+      </p>
+
+      <div id="preset-items">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="divider"></div>
+
+      <h3 class="section-title" style="font-size: 11px; margin-top: 0;">Custom Items</h3>
+      <div id="custom-items-list" class="custom-items-list">
+        <p class="help-text" id="no-custom-items">No custom items yet.</p>
+      </div>
+
+      <button class="btn btn-secondary" id="btn-add-item" style="margin-top: 12px; width: 100%;">
+        + Add Custom Item
+      </button>
+
+      <div class="add-item-form" id="add-item-form">
+        <div class="form-row">
+          <input type="text" id="new-item-emoji" class="emoji-input" placeholder="&#x1F381;" maxlength="4">
+          <input type="text" id="new-item-name" placeholder="Item name">
+        </div>
+        <div class="form-row">
+          <input type="number" id="new-item-price" placeholder="Price" min="0.01" step="0.01">
+          <input type="text" id="new-item-plural" placeholder="Plural label (e.g. tacos)">
+        </div>
+        <div class="form-row" style="justify-content: flex-end;">
+          <button class="btn btn-secondary" id="btn-cancel-item" style="padding: 6px 14px; font-size: 12px;">Cancel</button>
+          <button class="btn btn-primary" id="btn-save-item" style="padding: 6px 14px; font-size: 12px;">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Friction Thresholds -->
+    <div class="section">
+      <h2 class="section-title">Friction Thresholds</h2>
+      <p class="help-text" style="margin-bottom: 12px;">
+        Set dollar amounts for different friction levels
+      </p>
+
+      <div class="toggle-row">
+        <span class="toggle-label">
+          <span class="toggle-name">Enable threshold tiers</span>
+        </span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="thresholds-enabled">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="subsection" id="thresholds-config">
+        <div class="form-group">
+          <label for="threshold1">No friction below</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="threshold1" min="0" step="1" placeholder="5">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="threshold2">Full modal above</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="threshold2" min="0" step="1" placeholder="25">
+          </div>
+          <p class="help-text">Between these amounts: soft nudge. Above: full modal.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spending Cooldown -->
+    <div class="section">
+      <h2 class="section-title">Spending Cooldown</h2>
+      <p class="help-text" style="margin-bottom: 12px;">
+        Enforce a waiting period after proceeding with a purchase
+      </p>
+
+      <div class="toggle-row">
+        <span class="toggle-label">
+          <span class="toggle-name">Enable cooldown</span>
+        </span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="cooldown-enabled">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="subsection" id="cooldown-config">
+        <div class="form-group">
+          <label for="cooldown-minutes">Cooldown period</label>
+          <select id="cooldown-minutes">
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+            <option value="30">30 minutes</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Spending Cap -->
+    <div class="section">
+      <h2 class="section-title">Daily Spending Cap</h2>
+      <p class="help-text" style="margin-bottom: 12px;">
+        Set a daily limit to keep spending in check
+      </p>
+
+      <div class="toggle-row">
+        <span class="toggle-label">
+          <span class="toggle-name">Enable daily cap</span>
+        </span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="dailycap-enabled">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="subsection" id="dailycap-config">
+        <div class="form-group">
+          <label for="dailycap-amount">Daily spending limit</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="dailycap-amount" min="1" step="1" placeholder="50">
+          </div>
+          <p class="help-text">You'll see a warning when approaching this limit</p>
+        </div>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn btn-primary" id="btn-save">Save Settings</button>
       <button class="btn btn-secondary" id="btn-reset">Reset to Defaults</button>
@@ -251,7 +574,7 @@
     <div class="divider"></div>
 
     <button class="link-btn" id="btn-logs">
-      <span>📋</span>
+      <span>&#x1F4CB;</span>
       <span>View Activity Logs</span>
     </button>
 

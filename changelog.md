@@ -7,6 +7,194 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.21] - 2026-02-07
+
+### Added
+- **Diagnostic logging for friction flow** — added detailed log entries to trace threshold tier decisions and friction flow execution:
+  - `Thresholds disabled — defaulting to full modal` when thresholds are off
+  - `Friction flow starting: level=nudge, maxComparisons=1` at flow entry
+  - `Friction flow: N enabled items, showing M comparison step(s), priceWithTax=$X.XX` before comparison steps
+
+---
+
+## [0.2.20] - 2026-02-07
+
+### Changed
+- **Friction threshold tiers now log every decision** — when thresholds are enabled, every intercepted purchase logs which tier it fell into:
+  - `Threshold check: $5.99 is BELOW $10.00 threshold — no friction applied`
+  - `Threshold check: $19.95 is BETWEEN $10.00 and $25.00 — soft nudge triggered`
+  - `Threshold check: $126.00 is ABOVE $25.00 — full modal triggered`
+  - `Threshold check: $126.00 exceeds daily cap — full modal triggered`
+  - Previously, purchases below the threshold were silently passed through with no log entry
+
+### Fixed
+- **Soft nudge tier now shows the main friction modal with 1 comparison step** instead of a lightweight card
+  - Shows price, tax breakdown, channel, type, and "Is this intentional or impulsive?" prompt
+  - Followed by ONE comparison step (first enabled comparison item)
+  - Previously used a separate simplified nudge card UI that didn't match the main modal experience
+- **Full modal tier shows ALL enabled comparison items** as separate friction steps (unchanged behavior, now explicitly documented)
+- Removed the old `showNudge()` function — both tiers now use `runFrictionFlow()` with a `maxComparisons` parameter (1 for nudge, unlimited for full)
+
+### Tier behavior summary
+| Tier | Condition | Behavior |
+|------|-----------|----------|
+| No friction | Amount < threshold 1 | Allow purchase, log only |
+| Soft nudge | threshold 1 <= Amount < threshold 2 | Main modal + 1 comparison item |
+| Full modal | Amount >= threshold 2 | Main modal + ALL comparison items |
+
+When thresholds are disabled, always shows the full modal with all comparisons.
+
+---
+
+## [0.2.19] - 2026-02-07
+
+### Fixed
+- **Custom comparison items losing `enabled` flag on settings save** — toggling custom items on/off had no effect; they always saved without an `enabled` field
+  - Root cause: `renderCustomItems()` set `data-item-id` on both the container `<div>` and the `<input>` checkbox. `getFormSettings()` used `document.querySelector('[data-item-id="..."]')` which matched the `<div>` first. `div.checked` is `undefined`, so `enabled` was set to `undefined` (omitted by JSON.stringify). The interceptor's `.filter(i => i.enabled)` then treated them as disabled.
+  - Fix: Changed querySelector to `input[data-item-id="..."]` so it always targets the checkbox element
+  - Preset items were unaffected because `renderPresetItems()` only sets `data-item-id` on the `<input>`, not the row container
+
+---
+
+## [0.2.18] - 2026-02-07
+
+### Fixed
+- **Custom comparison items not showing on friction modals** — only preset items (Costco Hot Dog, Costco Rotisserie Chicken, Swenson's Galley Boy) were appearing as comparison steps
+  - Root cause: `count > 0` filter in `runFrictionFlow()` silently excluded items whose price exceeded the purchase amount (e.g., a $12.58 "Plant" vs a $4.99 purchase → `Math.round(5.36/12.58) = 0` → skipped)
+  - Fix: All enabled comparison items now always appear, using `Math.max(1, count)` to guarantee a minimum display of 1
+  - Same fix applied to the nudge overlay's single comparison line
+  - Affects both preset and custom items equally — every enabled item shows regardless of price ratio
+
+---
+
+## [0.2.17] - 2026-02-07
+
+### Added
+- **Distinct dismissal logging for friction modals** — Extension Log now distinguishes how a modal was dismissed:
+  - `User clicked Cancel button (Bits (10,000) - $126.00)`
+  - `User dismissed modal via outside click (Bits (10,000) - $126.00)`
+  - `User dismissed modal via Escape key (Bits (10,000) - $126.00)`
+  - `User clicked Proceed Anyway (Bits (10,000) - $126.00)`
+  - Applies to main overlay, comparison steps, and nudge modals
+  - Type and Price included in all dismissal log entries for context
+
+---
+
+## [0.2.16] - 2026-02-07
+
+### Fixed
+- **"Type" field on friction modal was showing the price instead of the purchase type** (e.g., "Type: $212.50" instead of "Type: Bits (5,000)")
+  - Root cause: `determinePurchaseType()` checked button text first and returned price strings as the type before any selector-based checks could run
+  - Fix: Restructured detection to check `data-a-target` selectors first (highest priority), then keyword matching, then text-based fallback
+  - Text-based fallback now strips dollar amounts and bits counts so prices never leak into the Type field
+  - Selector mappings: `top-nav-get-bits-button` → "Bits", `bits-purchase-button-5000` → "Bits (5,000)", `gift-button` → "Gift A Sub", etc.
+
+---
+
+## [0.2.15] - 2026-02-07
+
+### Added
+- **Swenson's Galley Boy preset comparison item** ($4.99, no tax) — "That's 3 Galley Boys"
+
+---
+
+## [0.2.14] - 2026-02-07
+
+### Added
+- **Intercept Bits purchase buttons inside the popover** — the Bits purchase popover (opened by clicking "Get Bits") contains tier buttons (100, 500, 1500, 5000, 10000, 25000 Bits) that now trigger friction modals
+  - Matches `button[data-a-target^="bits-purchase-button"]` for all tier variants
+  - Dollar price is extracted from button text (e.g., "$1.40", "$64.40", "$308.00")
+  - Purchase type shows as "Buy 5,000 Bits", "Buy 100 Bits", etc.
+  - Bits popover detection logged: "Bits purchase popover detected" with button count
+- Cheer button (`bits-button` / `aria-label="Cheer"`) remains unaffected
+
+---
+
+## [0.2.13] - 2026-02-07
+
+### Changed
+- **Comparison friction steps only show when price is detected** — if the extension can't extract a dollar amount from the button, the main overlay still shows but comparison steps are skipped (no meaningful comparison possible without a price)
+- **Comparison steps now display the tax-adjusted price** — message shows "That $5.37 is worth 3 Costco glizzies" using the with-tax amount instead of the raw pre-tax price
+
+---
+
+## [0.2.12] - 2026-02-07
+
+### Removed
+- **"Minutes of Work" comparison item preset** — redundant with the hourly rate calculation already shown on the main friction modal ("That's X minutes of work"). Comparison items now only contain tangible item comparisons (Costco Hot Dog, Costco Chicken, custom items). Existing saved settings are automatically migrated to remove the stale preset.
+
+### Changed
+- **Split activity logs into two separate views**
+  - **Extension Log** — tracks extension behavior and friction flow events: button interceptions, overlay displays, user decisions (Cancel/Proceed), cooldown triggers, daily cap warnings
+  - **Settings Log** — tracks all settings changes: saves, resets, custom item additions/deletions
+  - Each log has its own storage key (`mtsExtensionLog`, `mtsSettingsLog`) and 200-entry limit
+  - Old `mtsLogs` key is retired (auto-cleared on version change)
+- **Tab switcher on logs page** — toggle between Extension Log and Settings Log views
+  - Styled with MTS purple theme (active tab highlighted)
+  - Refresh, Clear, and Copy to Clipboard buttons operate on the currently selected log
+
+---
+
+## [0.2.11] - 2026-02-07
+
+### Fixed
+- **Fixed comparison friction steps not appearing after "Proceed Anyway"**
+  - Root cause: `runFrictionFlow()` had an early return when price wasn't detected (`priceWithTax === null`), skipping ALL comparison step modals
+  - Many Twitch buttons (e.g., "Get Bits") don't have a visible dollar price on the button, so price extraction returns null
+  - Comparison steps now always show for every enabled item, regardless of price detection
+  - When price is unknown, shows `?` as amount with message "Think about what else you could buy"
+  - When price is known but very small relative to comparison item, count floors to 1 instead of rounding to 0
+
+---
+
+## [0.2.10] - 2026-02-07
+
+### Changed
+- **Multi-step comparison friction flow** — each enabled comparison item now appears as its own separate modal window after the main overlay
+  - Step 1: Main overlay (cost breakdown, channel, type)
+  - Step 2+: One modal per enabled comparison item (e.g., "3 Costco glizzies", "1 Costco chicken", "9 minutes of work")
+  - Cancel at any step aborts the entire purchase
+  - Each step is individually logged for analytics
+- Refactored overlay system from callback-based to Promise-based (`showModalPromise()` helper)
+- Added `showComparisonStep()` for individual comparison modals with large number display
+- Added `runFrictionFlow()` to orchestrate the sequential multi-step flow
+
+---
+
+## [0.2.9] - 2026-02-07
+
+### Added
+- **Configurable comparison items system**
+  - 3 preset items: Costco Hot Dog ($1.50), Costco Rotisserie Chicken ($4.99), Minutes of Work (uses hourly rate)
+  - Custom item CRUD: add your own items with emoji, name, price, and plural label
+  - Toggle items on/off individually
+  - Comparisons show in cost breakdown (e.g., "That's 16 Costco glizzies")
+- **Friction threshold tiers** — configurable price thresholds for friction levels
+  - Below threshold 1: no friction (pass-through)
+  - Between threshold 1 and 2: nudge (lightweight overlay)
+  - Above threshold 2: full friction (main overlay + comparison steps)
+- **Spending cooldown** — configurable cooldown period (5/10/30 min) after proceeding with a purchase
+  - Shows red "Cooldown Active" modal with remaining time
+- **Daily spending cap** — set a daily budget with visual progress tracking
+  - Purple/orange/red badge showing daily progress percentage
+  - Escalates to full friction when cap would be exceeded
+- **Session spending tracker** — tracks per-channel session spending total
+- **Nudge overlay** — lightweight friction variant with price, channel, and one comparison line
+- **Settings migration** — `migrateSettings()` ensures backward compatibility when new settings are added
+- New types: `ComparisonItem`, `FrictionLevel`, `FrictionThresholds`, `CooldownConfig`, `DailyCapConfig`, `SpendingTracker`
+- Options page: 4 new sections (Comparison Items, Friction Thresholds, Spending Cooldown, Daily Spending Cap)
+
+---
+
+## [0.2.8] - 2026-02-07
+
+### Fixed
+- **Synced all version numbers** — manifest.json, package.json, and index.ts VERSION were out of sync (0.2.8, 0.2.7, 0.1.17 respectively)
+  - All three now update together on each release
+- Updated `scanForButtons()` in index.ts to reference `top-nav-get-bits-button` instead of `bits-button`
+
+---
+
 ## [0.2.7] - 2026-02-07
 
 ### Fixed
@@ -347,6 +535,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 0.2.21 | 2026-02-07 | Diagnostic logging for friction flow debugging |
+| 0.2.20 | 2026-02-07 | Threshold tier logging + soft nudge uses main modal with 1 comparison |
+| 0.2.19 | 2026-02-07 | Fixed custom items losing `enabled` flag on save (querySelector bug) |
+| 0.2.18 | 2026-02-07 | Fixed custom comparison items not showing on friction modals |
+| 0.2.17 | 2026-02-07 | Distinct dismissal logging: Cancel button vs outside click vs Escape |
+| 0.2.16 | 2026-02-07 | Fixed Type field showing price instead of purchase type |
+| 0.2.15 | 2026-02-07 | Added Swenson's Galley Boy preset comparison item |
+| 0.2.14 | 2026-02-07 | Intercept Bits purchase buttons inside the popover |
+| 0.2.13 | 2026-02-07 | Comparison steps require detected price, show tax-adjusted amount |
+| 0.2.12 | 2026-02-07 | Removed Minutes of Work preset, split logs into Extension/Settings |
+| 0.2.11 | 2026-02-07 | Fixed comparison friction steps not appearing after Proceed Anyway |
+| 0.2.10 | 2026-02-07 | Multi-step comparison friction flow (each item = separate modal) |
+| 0.2.9 | 2026-02-07 | Comparison items, friction thresholds, cooldown, daily cap, nudge |
+| 0.2.8 | 2026-02-07 | Synced all version numbers, fixed scanForButtons selector |
 | 0.2.7 | 2026-02-07 | Fixed Cheer button: block top-nav-get-bits-button, allow bits-button |
 | 0.2.6 | 2026-02-07 | Fixed Cheer button being incorrectly intercepted |
 | 0.2.5 | 2026-01-24 | Purchase logs now include settings used |
