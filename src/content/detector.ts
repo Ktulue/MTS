@@ -13,8 +13,8 @@ const SELECTORS = {
   giftSubModal: '[data-a-target="gift-sub-modal"]',
   giftSubConfirmButton: '[data-a-target="gift-sub-confirm-button"]',
 
-  // Bits elements
-  bitsButton: '[data-a-target="bits-button"]',
+  // Bits purchase (top nav "Get Bits" button — opens USD purchase modal)
+  bitsButton: '[data-a-target="top-nav-get-bits-button"]',
 
   // New Twitch button label (2025+)
   coreButtonLabel: '[data-a-target="tw-core-button-label-text"]',
@@ -294,22 +294,22 @@ export function isPurchaseButton(element: HTMLElement | null): boolean {
     return false;
   };
 
-  // Check if element has gift-related data-a-target
-  if (dataTarget.includes('gift')) {
-    debug('isPurchaseButton: MATCH via data-a-target (gift)', elementInfo);
+  // ALLOW: bits-button / aria-label="Cheer" is the Cheer button (uses already-owned Bits, not real money)
+  const ariaLbl = (element.getAttribute('aria-label') || '').toLowerCase();
+  if (dataTarget === 'bits-button' || ariaLbl === 'cheer') {
+    debug('isPurchaseButton: SKIPPED (Cheer button, not a purchase)', elementInfo);
+    return false;
+  }
+
+  // BLOCK: top-nav-get-bits-button / aria-label="Bits" is the Get Bits button (opens USD purchase modal)
+  if (dataTarget === 'top-nav-get-bits-button' || ariaLbl === 'bits') {
+    debug('isPurchaseButton: MATCH via Get Bits button (real money)', elementInfo);
     return true;
   }
 
-  // For bits-button: distinguish Cheer (using already-owned Bits) from Buy Bits (real money)
-  // The Cheer button has aria-label="Cheer" and data-a-target="bits-button"
-  // We only want to intercept the actual "Buy/Get Bits" flow, not cheering
-  if (dataTarget === 'bits-button') {
-    const ariaLbl = (element.getAttribute('aria-label') || '').toLowerCase();
-    if (ariaLbl === 'cheer') {
-      debug('isPurchaseButton: SKIPPED bits-button (Cheer, not purchase)', elementInfo);
-      return false;
-    }
-    debug('isPurchaseButton: MATCH via data-a-target (bits-button, non-cheer)', elementInfo);
+  // Check if element has gift-related data-a-target
+  if (dataTarget.includes('gift')) {
+    debug('isPurchaseButton: MATCH via data-a-target (gift)', elementInfo);
     return true;
   }
 
@@ -322,9 +322,8 @@ export function isPurchaseButton(element: HTMLElement | null): boolean {
 
   // Check for Combo buttons (inside one-tap-store)
   // These have aria-labels like "Send Hearts Combo, 5 Bits"
-  const ariaLabel = (element.getAttribute('aria-label') || '').toLowerCase();
-  if (ariaLabel.includes('combo') && ariaLabel.includes('bits')) {
-    debug('isPurchaseButton: MATCH via combo aria-label', { ...elementInfo, ariaLabel });
+  if (ariaLbl.includes('combo') && ariaLbl.includes('bits')) {
+    debug('isPurchaseButton: MATCH via combo aria-label', { ...elementInfo, ariaLbl });
     return true;
   }
 
@@ -334,8 +333,8 @@ export function isPurchaseButton(element: HTMLElement | null): boolean {
     // It's inside the combo store
     if (element.tagName === 'BUTTON') {
       // It's a button - check if it's a combo button (not close/about)
-      if (!ariaLabel.includes('close') && !ariaLabel.includes('about')) {
-        debug('isPurchaseButton: MATCH via one-tap-store button', { ...elementInfo, ariaLabel });
+      if (!ariaLbl.includes('close') && !ariaLbl.includes('about')) {
+        debug('isPurchaseButton: MATCH via one-tap-store button', { ...elementInfo, ariaLbl });
         return true;
       }
     } else {

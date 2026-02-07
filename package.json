@@ -1,6 +1,6 @@
 {
   "name": "mindful-twitch-spending",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Chrome extension that creates intentional friction before Twitch spending",
   "scripts": {
     "build": "webpack --mode production",

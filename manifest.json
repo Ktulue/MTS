@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Mindful Twitch Spending",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Create intentional friction before Twitch purchases to encourage mindful spending",
   "permissions": [
     "storage",

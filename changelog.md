@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.7] - 2026-02-07
+
+### Fixed
+- **Fixed Cheer button still being intercepted** - `data-a-target="bits-button"` is always the Cheer button (already-owned Bits) and is now unconditionally allowed through
+  - The actual Buy Bits button is `data-a-target="top-nav-get-bits-button"` in the top nav — this is now correctly intercepted
+  - Updated SELECTORS to reference the correct target
+
+---
+
 ## [0.2.6] - 2026-02-07
 
 ### Fixed
@@ -338,6 +347,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 0.2.7 | 2026-02-07 | Fixed Cheer button: block top-nav-get-bits-button, allow bits-button |
 | 0.2.6 | 2026-02-07 | Fixed Cheer button being incorrectly intercepted |
 | 0.2.5 | 2026-01-24 | Purchase logs now include settings used |
 | 0.2.4 | 2026-01-24 | Fixed price parsing for values with commas |
