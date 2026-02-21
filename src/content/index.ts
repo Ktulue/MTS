@@ -9,11 +9,24 @@
 
 import { setupInterceptor } from './interceptor';
 import { setupModalObserver, getCurrentChannel } from './detector';
+import { checkAndUpdateLiveStatus } from './streamingMode';
 import { log, debug, error, setVersion, loadLogs } from '../shared/logger';
+import { migrateSettings, DEFAULT_SETTINGS } from '../shared/types';
 import './styles.css';
 
+const SETTINGS_KEY = 'mtsSettings';
+
+async function loadSettings() {
+  try {
+    const result = await chrome.storage.sync.get(SETTINGS_KEY);
+    return migrateSettings(result[SETTINGS_KEY] || {});
+  } catch {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+
 /** Current extension version */
-const VERSION = '0.2.22';
+const VERSION = '0.3.8';
 
 // Set version immediately so logger can check for updates
 setVersion(VERSION);
@@ -126,6 +139,14 @@ function init(): void {
     // Set up the click interceptor
     setupInterceptor();
     log('Click interceptor active');
+
+    // Start streaming mode polling (every 30s)
+    const startStreamingPoller = async () => {
+      const settings = await loadSettings();
+      await checkAndUpdateLiveStatus(settings);
+    };
+    startStreamingPoller();
+    setInterval(startStreamingPoller, 30000);
 
     // Set up modal observer for dynamically loaded content
     setupModalObserver((modal) => {

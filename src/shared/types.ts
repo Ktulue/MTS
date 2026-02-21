@@ -33,13 +33,14 @@ export interface ComparisonItem {
 }
 
 /** Friction level applied at different spend amounts */
-export type FrictionLevel = 'none' | 'nudge' | 'full';
+export type FrictionLevel = 'none' | 'nudge' | 'full' | 'cap-bypass';
 
 /** Friction threshold tier configuration */
 export interface FrictionThresholds {
   enabled: boolean;
-  threshold1: number;
-  threshold2: number;
+  thresholdFloor: number;
+  thresholdCeiling: number;
+  softNudgeSteps: number;
 }
 
 /** Cooldown configuration */
@@ -54,6 +55,23 @@ export interface DailyCapConfig {
   amount: number;
 }
 
+/** Whitelist behavior applied to a specific channel */
+export type WhitelistBehavior = 'skip' | 'reduced' | 'track-only';
+
+/** A single channel whitelist entry */
+export interface WhitelistEntry {
+  username: string;         // normalized lowercase, no URL prefix
+  behavior: WhitelistBehavior;
+}
+
+/** Streaming mode configuration */
+export interface StreamingModeConfig {
+  enabled: boolean;           // default: true
+  twitchUsername: string;     // default: ''
+  gracePeriodMinutes: number; // default: 15
+  logBypassed: boolean;       // default: true
+}
+
 /** User settings stored in chrome.storage.sync */
 export interface UserSettings {
   hourlyRate: number;
@@ -62,6 +80,9 @@ export interface UserSettings {
   cooldown: CooldownConfig;
   dailyCap: DailyCapConfig;
   frictionThresholds: FrictionThresholds;
+  streamingMode: StreamingModeConfig;
+  toastDurationSeconds: number;
+  whitelistedChannels: WhitelistEntry[];
 }
 
 /** Preset comparison items */
@@ -110,9 +131,18 @@ export const DEFAULT_SETTINGS: UserSettings = {
   },
   frictionThresholds: {
     enabled: false,
-    threshold1: 5,
-    threshold2: 25,
+    thresholdFloor: 5,
+    thresholdCeiling: 25,
+    softNudgeSteps: 1,
   },
+  streamingMode: {
+    enabled: true,
+    twitchUsername: '',
+    gracePeriodMinutes: 15,
+    logBypassed: true,
+  },
+  toastDurationSeconds: 5,
+  whitelistedChannels: [],
 };
 
 /** Transient spending data — stored in chrome.storage.local */
@@ -163,9 +193,21 @@ export function migrateSettings(saved: Partial<UserSettings>): UserSettings {
       ...DEFAULT_SETTINGS.dailyCap,
       ...(saved.dailyCap || {}),
     },
-    frictionThresholds: {
-      ...DEFAULT_SETTINGS.frictionThresholds,
-      ...(saved.frictionThresholds || {}),
+    frictionThresholds: (() => {
+      const s = (saved.frictionThresholds || {}) as any;
+      return {
+        enabled: s.enabled ?? DEFAULT_SETTINGS.frictionThresholds.enabled,
+        // Migrate old threshold1/threshold2 keys to new names
+        thresholdFloor: s.thresholdFloor ?? s.threshold1 ?? DEFAULT_SETTINGS.frictionThresholds.thresholdFloor,
+        thresholdCeiling: s.thresholdCeiling ?? s.threshold2 ?? DEFAULT_SETTINGS.frictionThresholds.thresholdCeiling,
+        softNudgeSteps: s.softNudgeSteps ?? DEFAULT_SETTINGS.frictionThresholds.softNudgeSteps,
+      };
+    })(),
+    streamingMode: {
+      ...DEFAULT_SETTINGS.streamingMode,
+      ...(saved.streamingMode || {}),
     },
+    toastDurationSeconds: saved.toastDurationSeconds ?? DEFAULT_SETTINGS.toastDurationSeconds,
+    whitelistedChannels: saved.whitelistedChannels ?? DEFAULT_SETTINGS.whitelistedChannels,
   };
 }

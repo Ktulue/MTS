@@ -376,3 +376,88 @@
     flex-direction: column;
   }
 }
+
+/* Streaming mode toast */
+.mts-streaming-toast {
+  position: fixed;
+  bottom: 48px;
+  right: 10px;
+  background: #eb0400;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999998;
+  font-family: sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.mts-streaming-toast--fade { opacity: 0; }
+
+/* Daily budget bypass toast */
+.mts-budget-toast {
+  position: fixed;
+  bottom: 48px;
+  right: 10px;
+  background: #00c853;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999998;
+  font-family: sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.mts-budget-toast--fade { opacity: 0; }
+
+/* Whitelist reduced toast */
+.mts-whitelist-toast {
+  position: fixed;
+  bottom: 48px;
+  right: 10px;
+  background: #9146ff;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999998;
+  font-family: sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.mts-whitelist-toast--fade { opacity: 0; }
+
+/* Whitelist note banner inside main overlay (track-only) */
+.mts-whitelist-note {
+  background: rgba(145, 70, 255, 0.15);
+  border: 1px solid rgba(145, 70, 255, 0.3);
+  border-radius: 6px;
+  color: #c59eff;
+  font-size: 13px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Grace period badge */
+#mts-grace-badge {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background: #ff8c00;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 999997;
+  font-family: sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}

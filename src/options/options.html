@@ -108,6 +108,12 @@
       border-color: #9146ff;
     }
 
+    input[type="number"].input-linked,
+    input[type="text"].input-linked {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
       opacity: 1;
@@ -162,6 +168,16 @@
     .btn-secondary:hover {
       background: #3d3d42;
       color: #efeff1;
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: #eb0400;
+      border: 1px solid #eb0400;
+    }
+
+    .btn-danger:hover {
+      background: rgba(235, 4, 0, 0.15);
     }
 
     .actions {
@@ -394,6 +410,162 @@
       margin-top: 8px;
       border-left: 2px solid #3d3d42;
     }
+
+    /* Channel whitelist list */
+    .whitelist-item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #2a2a2e;
+    }
+
+    .whitelist-item-row:last-child {
+      border-bottom: none;
+    }
+
+    .whitelist-channel-name {
+      flex: 1;
+      font-size: 13px;
+      color: #efeff1;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .whitelist-behavior-select {
+      background: #18181b;
+      border: 1px solid #3d3d42;
+      border-radius: 4px;
+      color: #efeff1;
+      font-size: 12px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .whitelist-behavior-select:focus {
+      border-color: #9146ff;
+      outline: none;
+    }
+
+    .tracker-data {
+      display: none;
+      margin-top: 12px;
+      background: #18181b;
+      border: 1px solid #3d3d42;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 12px;
+      font-family: 'Courier New', Courier, monospace;
+      color: #adadb8;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Info icon tooltips */
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #2a2a2e;
+      border: 1px solid #3d3d42;
+      color: #adadb8;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: help;
+      position: relative;
+      vertical-align: middle;
+      margin-left: 5px;
+      flex-shrink: 0;
+      user-select: none;
+      font-style: normal;
+      text-transform: none;
+      letter-spacing: normal;
+      line-height: 1;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .info-icon:hover,
+    .info-icon:focus {
+      border-color: #9146ff;
+      color: #9146ff;
+      outline: none;
+    }
+
+    .info-icon::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      background: #0e0e10;
+      color: #efeff1;
+      font-size: 12px;
+      font-weight: 400;
+      padding: 8px 10px;
+      border-radius: 6px;
+      width: 220px;
+      white-space: normal;
+      line-height: 1.5;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      border: 1px solid #3d3d42;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s, visibility 0.15s;
+      z-index: 200;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .info-icon:hover::before,
+    .info-icon:focus::before {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Disabled button state */
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Inline field-level validation error */
+    .field-error {
+      display: none;
+      color: #eb0400;
+      font-size: 11px;
+      margin: 3px 0 4px;
+      padding-left: 8px;
+      border-left: 2px solid #eb0400;
+      line-height: 1.4;
+    }
+
+    .field-error.visible {
+      display: block;
+    }
+
+    /* Similarity warning inline block */
+    .similarity-warning {
+      display: none;
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: rgba(255, 184, 0, 0.1);
+      border: 1px solid rgba(255, 184, 0, 0.35);
+      border-radius: 4px;
+      color: #f0b429;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .similarity-warning p {
+      margin: 0 0 8px 0;
+    }
+
+    .similarity-warning .form-row {
+      margin-bottom: 0;
+    }
   </style>
 </head>
 <body>
@@ -408,12 +580,13 @@
       <h2 class="section-title">Income Settings</h2>
 
       <div class="form-group">
-        <label for="hourly-rate">Hourly Rate (after tax)</label>
+        <label for="hourly-rate">Hourly Rate (after tax) <span class="info-icon" data-tooltip="Your take-home hourly pay. MTS uses this to calculate how many minutes of work a purchase costs you." tabindex="0">i</span></label>
         <div class="input-wrapper">
           <span class="input-prefix">$</span>
           <input type="number" id="hourly-rate" min="0" step="0.01" placeholder="35.00">
           <span class="input-suffix">/ hour</span>
         </div>
+        <p id="hourly-rate-error" class="field-error"></p>
         <p class="help-text">Used to show purchases as "X hours of work"</p>
       </div>
     </div>
@@ -423,18 +596,19 @@
       <h2 class="section-title">Tax Settings</h2>
 
       <div class="form-group">
-        <label for="tax-rate">Sales Tax Rate</label>
+        <label for="tax-rate">Sales Tax Rate <span class="info-icon" data-tooltip="Your local sales tax rate. MTS adds this to the purchase price to show the true cost. Ohio default: 8%." tabindex="0">i</span></label>
         <div class="input-wrapper">
           <input type="number" id="tax-rate" min="0" max="100" step="0.1" placeholder="7.5">
           <span class="input-suffix">%</span>
         </div>
+        <p id="tax-rate-error" class="field-error"></p>
         <p class="help-text">Applied to show true cost including tax</p>
       </div>
     </div>
 
     <!-- Comparison Items -->
     <div class="section">
-      <h2 class="section-title">Comparison Items</h2>
+      <h2 class="section-title">Comparison Items <span class="info-icon" data-tooltip="Toggle on to include an item in the friction windows." tabindex="0">i</span></h2>
       <p class="help-text" style="margin-bottom: 12px;">
         Show relatable comparisons on the friction modal (e.g., "That's 16 Costco glizzies")
       </p>
@@ -445,7 +619,7 @@
 
       <div class="divider"></div>
 
-      <h3 class="section-title" style="font-size: 11px; margin-top: 0;">Custom Items</h3>
+      <h3 class="section-title" style="font-size: 11px; margin-top: 0;">Custom Items <span class="info-icon" data-tooltip="Create your own comparison item with a custom name, emoji, and price." tabindex="0">i</span></h3>
       <div id="custom-items-list" class="custom-items-list">
         <p class="help-text" id="no-custom-items">No custom items yet.</p>
       </div>
@@ -459,15 +633,72 @@
           <input type="text" id="new-item-emoji" class="emoji-input" placeholder="&#x1F381;" maxlength="4">
           <input type="text" id="new-item-name" placeholder="Item name">
         </div>
+        <p id="item-name-error" class="field-error"></p>
+        <p id="new-item-emoji-error" class="field-error"></p>
+        <p class="help-text" style="margin: 2px 0 6px;">Tip: Press <strong>Win + .</strong> to open the emoji picker on Windows</p>
         <div class="form-row">
           <input type="number" id="new-item-price" placeholder="Price" min="0.01" step="0.01">
           <input type="text" id="new-item-plural" placeholder="Plural label (e.g. tacos)">
         </div>
+        <p id="new-item-price-error" class="field-error"></p>
         <div class="form-row" style="justify-content: flex-end;">
           <button class="btn btn-secondary" id="btn-cancel-item" style="padding: 6px 14px; font-size: 12px;">Cancel</button>
           <button class="btn btn-primary" id="btn-save-item" style="padding: 6px 14px; font-size: 12px;">Add</button>
         </div>
+        <div id="similarity-warning" class="similarity-warning">
+          <p id="similarity-warning-text"></p>
+          <div class="form-row" style="justify-content: flex-end;">
+            <button class="btn btn-secondary" id="btn-similarity-cancel" style="padding: 6px 14px; font-size: 12px;">Cancel</button>
+            <button class="btn btn-primary" id="btn-similarity-confirm" style="padding: 6px 14px; font-size: 12px;">Add Anyway</button>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <!-- Daily Spending Cap -->
+    <div class="section">
+      <h2 class="section-title">Daily Spending Cap <span class="info-icon" data-tooltip="Set a daily spending limit. MTS escalates friction as you approach the cap and blocks purchases once exceeded." tabindex="0">i</span></h2>
+      <p class="help-text" style="margin-bottom: 12px;">
+        Set a daily limit to keep spending in check
+      </p>
+
+      <div class="toggle-row">
+        <span class="toggle-label">
+          <span class="toggle-name">Enable daily cap</span>
+        </span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="dailycap-enabled">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="subsection" id="dailycap-config">
+        <div class="form-group">
+          <label for="dailycap-amount">Daily spending limit</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">$</span>
+            <input type="number" id="dailycap-amount" min="1" step="1" placeholder="50">
+          </div>
+          <p id="dailycap-amount-error" class="field-error"></p>
+          <p class="help-text">You'll see a warning when approaching this limit</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spending Tracker -->
+    <div class="section">
+      <h2 class="section-title">Spending Tracker <span class="info-icon" data-tooltip="Tracks cumulative spending during a single Twitch browsing session." tabindex="0">i</span></h2>
+      <p class="help-text" style="margin-bottom: 12px;">
+        Manage the daily spending data stored locally by the extension
+      </p>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn btn-danger" id="btn-reset-tracker">Reset Spending Tracker</button>
+        <button class="btn btn-secondary" id="btn-view-tracker">View Current Tracker</button>
+      </div>
+
+      <div class="status" id="tracker-status"></div>
+      <pre class="tracker-data" id="tracker-data"></pre>
     </div>
 
     <!-- Friction Thresholds -->
@@ -479,7 +710,7 @@
 
       <div class="toggle-row">
         <span class="toggle-label">
-          <span class="toggle-name">Enable threshold tiers</span>
+          <span class="toggle-name">Enable threshold tiers <span class="info-icon" data-tooltip="Enable to set dollar thresholds that control how much friction MTS applies. Below the lower threshold = no friction. Between = soft nudge. Above = full modal." tabindex="0">i</span></span>
         </span>
         <label class="toggle-switch">
           <input type="checkbox" id="thresholds-enabled">
@@ -489,26 +720,36 @@
 
       <div class="subsection" id="thresholds-config">
         <div class="form-group">
-          <label for="threshold1">No friction below</label>
+          <label for="threshold-floor">Friction floor <span class="info-icon" data-tooltip="Purchases below this amount pass through with no friction — just logged." tabindex="0">i</span></label>
           <div class="input-wrapper">
             <span class="input-prefix">$</span>
-            <input type="number" id="threshold1" min="0" step="1" placeholder="5">
+            <input type="number" id="threshold-floor" min="0" step="1" placeholder="5">
+          </div>
+          <p id="threshold-floor-error" class="field-error"></p>
+          <p class="help-text" id="threshold-floor-linked-note" style="display: none; color: #9146ff;">Linked to daily spending cap</p>
+        </div>
+        <div class="form-group">
+          <label for="soft-nudge-steps">Comparison steps for soft nudge</label>
+          <div class="input-wrapper">
+            <input type="number" id="soft-nudge-steps" min="1" step="1" placeholder="1" style="width: 80px;">
+            <span class="input-suffix" id="soft-nudge-steps-count"></span>
           </div>
         </div>
         <div class="form-group">
-          <label for="threshold2">Full modal above</label>
+          <label for="threshold-ceiling">Friction ceiling <span class="info-icon" data-tooltip="Purchases at or above this amount get the full friction modal with all enabled comparisons." tabindex="0">i</span></label>
           <div class="input-wrapper">
             <span class="input-prefix">$</span>
-            <input type="number" id="threshold2" min="0" step="1" placeholder="25">
+            <input type="number" id="threshold-ceiling" min="0" step="1" placeholder="25">
           </div>
-          <p class="help-text">Between these amounts: soft nudge. Above: full modal.</p>
+          <p id="threshold-ceiling-error" class="field-error"></p>
+          <p class="help-text">Between floor and ceiling: soft nudge. Above ceiling: full friction with all comparison items.</p>
         </div>
       </div>
     </div>
 
     <!-- Spending Cooldown -->
     <div class="section">
-      <h2 class="section-title">Spending Cooldown</h2>
+      <h2 class="section-title">Spending Cooldown <span class="info-icon" data-tooltip="After you proceed with a purchase, MTS enforces a waiting period before allowing the next one through without friction." tabindex="0">i</span></h2>
       <p class="help-text" style="margin-bottom: 12px;">
         Enforce a waiting period after proceeding with a purchase
       </p>
@@ -535,32 +776,78 @@
       </div>
     </div>
 
-    <!-- Daily Spending Cap -->
+    <!-- Streaming Mode -->
     <div class="section">
-      <h2 class="section-title">Daily Spending Cap</h2>
+      <h2 class="section-title">Streaming Mode</h2>
       <p class="help-text" style="margin-bottom: 12px;">
-        Set a daily limit to keep spending in check
+        Bypass friction when you're live on your own channel
       </p>
 
       <div class="toggle-row">
         <span class="toggle-label">
-          <span class="toggle-name">Enable daily cap</span>
+          <span class="toggle-name">Enable streaming mode</span>
         </span>
         <label class="toggle-switch">
-          <input type="checkbox" id="dailycap-enabled">
+          <input type="checkbox" id="streaming-enabled">
           <span class="toggle-slider"></span>
         </label>
       </div>
 
-      <div class="subsection" id="dailycap-config">
+      <div class="subsection" id="streaming-config">
         <div class="form-group">
-          <label for="dailycap-amount">Daily spending limit</label>
-          <div class="input-wrapper">
-            <span class="input-prefix">$</span>
-            <input type="number" id="dailycap-amount" min="1" step="1" placeholder="50">
-          </div>
-          <p class="help-text">You'll see a warning when approaching this limit</p>
+          <label for="streaming-username">Your Twitch username</label>
+          <input type="text" id="streaming-username" placeholder="yourname" autocomplete="off">
+          <p class="help-text">Friction only bypasses when you're on this channel's page</p>
         </div>
+        <div class="form-group">
+          <label for="streaming-grace">Grace period after stream ends</label>
+          <div class="input-wrapper">
+            <input type="number" id="streaming-grace" min="0" max="120" step="5" placeholder="15">
+            <span class="input-suffix">min</span>
+          </div>
+        </div>
+        <div class="toggle-row" style="margin-top: 8px;">
+          <span class="toggle-label">
+            <span class="toggle-name">Log bypassed purchases</span>
+          </span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="streaming-log-bypassed">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Channel Whitelist -->
+    <div class="section">
+      <h2 class="section-title">Channel Whitelist <span class="info-icon" data-tooltip="Add Twitch channels where you've planned your support. MTS will reduce or skip friction for these channels." tabindex="0">i</span></h2>
+      <p class="help-text" style="margin-bottom: 12px;">
+        Bypass or reduce friction for channels you intentionally support.
+        <strong>Spending is still tracked for whitelisted channels.</strong>
+      </p>
+
+      <div class="input-wrapper" style="gap: 8px;">
+        <input type="text" id="whitelist-username-input" placeholder="ktulue or twitch.tv/ktulue" style="flex: 1; width: auto;" autocomplete="off">
+        <button class="btn btn-secondary" id="btn-add-whitelist" style="white-space: nowrap;">Add Channel</button>
+      </div>
+      <p id="whitelist-username-error" class="field-error" style="margin: 4px 0 8px;"></p>
+
+      <div id="whitelist-items">
+        <p class="help-text" id="no-whitelist-items">No channels whitelisted yet.</p>
+      </div>
+    </div>
+
+    <!-- Display Preferences -->
+    <div class="section">
+      <h2 class="section-title">Display Preferences</h2>
+
+      <div class="form-group">
+        <label for="toast-duration">Notification display time</label>
+        <div class="input-wrapper">
+          <input type="number" id="toast-duration" min="1" max="30" step="1" placeholder="5">
+          <span class="input-suffix">seconds</span>
+        </div>
+        <p class="help-text">How long toast notifications remain visible (1–30 seconds)</p>
       </div>
     </div>
 

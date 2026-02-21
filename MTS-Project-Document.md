@@ -1,4 +1,5 @@
 # MTS - Mindful Twitch Spending
+
 ## Chrome Extension Project Document
 
 ---
@@ -15,18 +16,18 @@
 
 This document is organized into **four phases** that mirror the software development lifecycle:
 
-| Phase | Purpose | Stream Content |
-|-------|---------|----------------|
-| **Phase 1: Discovery** | Why are we building this? | Problem identification, psychology, personal motivation |
-| **Phase 2: Design** | What are we building? | Features, UX flows, architecture decisions |
-| **Phase 3: Implementation** | How do we build it? | MVP parts, prompts for Claude, validation steps |
-| **Phase 4: Enhancement** | How do we make it better? | Optional add-ons ordered by complexity |
+| Phase                       | Purpose                   | Stream Content                                          |
+| --------------------------- | ------------------------- | ------------------------------------------------------- |
+| **Phase 1: Discovery**      | Why are we building this? | Problem identification, psychology, personal motivation |
+| **Phase 2: Design**         | What are we building?     | Features, UX flows, architecture decisions              |
+| **Phase 3: Implementation** | How do we build it?       | MVP parts, prompts for Claude, validation steps         |
+| **Phase 4: Enhancement**    | How do we make it better? | Optional add-ons ordered by complexity                  |
 
 ---
 
 # Phase 1: Discovery & Research
 
-*"Before writing any code, understand the problem deeply."*
+_"Before writing any code, understand the problem deeply."_
 
 ---
 
@@ -45,7 +46,7 @@ Twitch has engineered powerful psychological triggers that encourage impulsive s
 ### The Impulse Spending Pattern
 
 ```
-See Hype Train → Feel excitement/FOMO → Click gift → 
+See Hype Train → Feel excitement/FOMO → Click gift →
 Instant dopamine hit → Regret 10 minutes later → Repeat
 ```
 
@@ -72,6 +73,7 @@ Why Josh needs this:
 ### The Reddit Amazon Extension
 
 A developer created a Chrome extension for their wife that:
+
 - Intercepted Amazon checkout flows
 - Showed the purchase total converted to hours of work
 - Required multiple confirmation steps
@@ -81,12 +83,12 @@ This proves the concept works for changing spending behavior.
 
 ### Existing Solutions
 
-| Solution | Why It Doesn't Work |
-|----------|---------------------|
-| Browser spending trackers | Show data AFTER spending, not BEFORE |
-| Twitch spending limits | Don't exist natively |
-| General budgeting apps | Too removed from the moment of decision |
-| Self-control | Doesn't work against engineered psychology |
+| Solution                  | Why It Doesn't Work                        |
+| ------------------------- | ------------------------------------------ |
+| Browser spending trackers | Show data AFTER spending, not BEFORE       |
+| Twitch spending limits    | Don't exist natively                       |
+| General budgeting apps    | Too removed from the moment of decision    |
+| Self-control              | Doesn't work against engineered psychology |
 
 **Gap:** No solution creates friction at the exact moment of Twitch impulse.
 
@@ -136,6 +138,7 @@ Showing how spending affects debt repayment ("This pushes your debt-free date ba
 ### Platform Scope
 
 **Desktop Chrome only** for MVP because:
+
 - Chrome has 65%+ browser market share
 - Extension APIs are well-documented
 - TypeScript tooling is excellent
@@ -145,7 +148,7 @@ Showing how spending affects debt repayment ("This pushes your debt-free date ba
 
 # Phase 2: Design & Architecture
 
-*"Design the solution before writing code."*
+_"Design the solution before writing code."_
 
 ---
 
@@ -187,7 +190,7 @@ Your Twitch username: ________
 ```
 [ ] Enable streaming mode (bypass when live)
     Grace period after stream ends: __ minutes (default: 15)
-    
+
 [ ] Enable daily spending limit: $__.__
 [ ] Enable weekly spending limit: $__.__
 
@@ -204,6 +207,7 @@ Friction level: ( ) Low  ( ) Medium  (•) High  ( ) Extreme
 ### Friction Levels
 
 **Low Friction:**
+
 ```
 ┌─────────────────────────────────────────┐
 │  You're about to spend $6.99            │
@@ -215,6 +219,7 @@ Friction level: ( ) Low  ( ) Medium  (•) High  ( ) Extreme
 ```
 
 **Medium Friction:**
+
 ```
 Step 1: Show cost + hours
 Step 2: "Why do you want to make this purchase?"
@@ -225,21 +230,23 @@ Step 3: Final confirmation
 ```
 
 **High Friction (Recommended):**
+
 ```
 Step 1: Show cost + hours + custom comparisons
         "This equals 2.5 gallons of gas"
         "This is 15% of your daily Twitch budget"
-        
+
 Step 2: Mandatory 10-second countdown
         "Take a breath. Do you still want this?"
         [Cancel]  [Yes, I've thought about it] (disabled for 10s)
-        
+
 Step 3: Type confirmation
         "Type 'I WANT THIS' to proceed"
         [________________]
 ```
 
 **Extreme Friction:**
+
 - All of High Friction, plus:
 - 30-second countdown
 - Shows impact on debt repayment timeline
@@ -287,6 +294,7 @@ twitch-spending-guardian/
 **1. Detecting Twitch Purchases**
 
 Twitch uses dynamic modals. We'll use MutationObserver to watch for:
+
 - Subscribe button clicks
 - Gift sub modal appearances
 - Bits purchase flows
@@ -307,13 +315,17 @@ const observer = new MutationObserver((mutations) => {
 Use event capture phase to catch clicks before Twitch's handlers:
 
 ```typescript
-document.addEventListener('click', (e) => {
-  if (isPurchaseButton(e.target)) {
-    e.preventDefault();
-    e.stopPropagation();
-    showFrictionOverlay(extractPrice(e.target));
-  }
-}, { capture: true }); // Capture phase = runs first
+document.addEventListener(
+  "click",
+  (e) => {
+    if (isPurchaseButton(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      showFrictionOverlay(extractPrice(e.target));
+    }
+  },
+  { capture: true },
+); // Capture phase = runs first
 ```
 
 **3. Streaming Mode Detection**
@@ -325,7 +337,9 @@ Multiple detection methods:
 const liveBadge = document.querySelector('[data-a-target="live-indicator"]');
 
 // Method 2: Player state
-const livePlayer = document.querySelector('[data-a-target="player-state-live"]');
+const livePlayer = document.querySelector(
+  '[data-a-target="player-state-live"]',
+);
 
 // Method 3: JSON-LD metadata
 const scripts = document.querySelectorAll('script[type="application/ld+json"]');
@@ -367,6 +381,7 @@ Is USER on their OWN channel?
 ### Grace Period
 
 After stream ends, allow a configurable window (default 15 minutes) for:
+
 - Raid gifting
 - Final community engagement
 - Post-stream thank-you subs
@@ -375,7 +390,7 @@ After stream ends, allow a configurable window (default 15 minutes) for:
 
 # Phase 3: Implementation - MVP
 
-*"Build the core product first, validate it works, then enhance."*
+_"Build the core product first, validate it works, then enhance."_
 
 The MVP is broken into 6 parts, each designed to be completed in roughly one stream session.
 
@@ -388,6 +403,7 @@ The MVP is broken into 6 parts, each designed to be completed in roughly one str
 **Goal:** Extension loads, detects purchases, shows basic blocking overlay.
 
 ### Features
+
 - [ ] Basic manifest.json setup (Manifest V3)
 - [ ] Project structure with TypeScript configuration
 - [ ] Content script that loads on Twitch pages
@@ -400,7 +416,7 @@ The MVP is broken into 6 parts, each designed to be completed in roughly one str
 ### Prompt for Claude
 
 ```
-I'm building a Chrome extension called "Mindful Twitch Spending" using TypeScript 
+I'm building a Chrome extension called "Mindful Twitch Spending" using TypeScript
 and Manifest V3. I need you to create the foundation which includes:
 
 1. A manifest.json configured for Manifest V3 that:
@@ -441,6 +457,7 @@ twitch-spending-guardian/
 ```
 
 ### Success Criteria
+
 - [ ] Extension loads in Chrome without errors
 - [ ] Navigating to Twitch shows content script is active (console log)
 - [ ] Clicking a sub/gift button shows the overlay
@@ -449,6 +466,7 @@ twitch-spending-guardian/
 - [ ] Price is extracted and displayed (even if not perfect for all cases)
 
 ### Validation Steps
+
 1. Load unpacked extension in Chrome (chrome://extensions)
 2. Enable Developer Mode
 3. Navigate to any Twitch channel
@@ -466,6 +484,7 @@ twitch-spending-guardian/
 **Goal:** Let users configure their hourly rate and tax rate.
 
 ### Features
+
 - [ ] Options page (options.html) accessible from extension menu
 - [ ] Input fields for:
   - Take-home hourly rate (direct entry)
@@ -479,7 +498,7 @@ twitch-spending-guardian/
 ### Prompt for Claude
 
 ```
-I have the MVP foundation of my Mindful Twitch Spending extension working. 
+I have the MVP foundation of my Mindful Twitch Spending extension working.
 Now I need to add an Options page where users can configure their settings.
 
 Create an options page that includes:
@@ -487,7 +506,7 @@ Create an options page that includes:
 1. options.html with a clean, simple form containing:
    - Two input modes for income (radio button toggle):
      a) "Take-home hourly rate" input (number, e.g., 35.00)
-     b) "Annual salary" input (auto-calculates hourly assuming 2080 hours 
+     b) "Annual salary" input (auto-calculates hourly assuming 2080 hours
         and 30% total tax burden)
    - Two input modes for tax (radio button toggle):
      a) "Sales tax rate" input (percentage, default 7.5)
@@ -508,14 +527,15 @@ Create an options page that includes:
    - Helper functions: saveSettings(), loadSettings()
    - Default values if no settings exist
 
-5. Update the content script to load these settings and use them 
+5. Update the content script to load these settings and use them
    (we'll use them for calculations in the next part)
 
-Keep the styling minimal but professional. Use CSS that matches the 
+Keep the styling minimal but professional. Use CSS that matches the
 overlay styling from Part 1.
 ```
 
 ### Success Criteria
+
 - [ ] Can access options from extension right-click menu
 - [ ] Both income input modes work correctly
 - [ ] Settings persist after browser restart
@@ -553,6 +573,7 @@ This ties your community into the project — they're not just watching, they're
 ## 📋 Stream 1 Quick Reference (MVP Parts 1-2)
 
 **Pre-Stream Checklist:**
+
 - [x] Node.js installed
 - [x] VS Code with Cloak extension
 - [x] GitHub repo configured
@@ -561,6 +582,7 @@ This ties your community into the project — they're not just watching, they're
 - [ ] OBS visibility toggle hotkey ready
 
 **Stream Flow:**
+
 1. **Open** — Brief "why" (Hype Train psychology, friction concept)
 2. **Show the doc** — Point to Phase 1 & 2, demonstrate planning before coding
 3. **MVP Part 1** — Paste prompt into Claude Code, build foundation (~1.5-2 hrs)
@@ -580,6 +602,7 @@ This ties your community into the project — they're not just watching, they're
 **Goal:** Show the TRUE cost in dollars and hours of labor.
 
 ### Features
+
 - [ ] Calculate price + sales tax
 - [ ] Convert total to hours/minutes of work
 - [ ] Display both in the overlay
@@ -616,7 +639,7 @@ This ties your community into the project — they're not just watching, they're
 ### Prompt for Claude
 
 ```
-I need to add the calculation logic to my Mindful Twitch Spending. 
+I need to add the calculation logic to my Mindful Twitch Spending.
 The overlay should show the TRUE cost of a purchase.
 
 Create a calculations.ts module that:
@@ -644,7 +667,7 @@ interface Comparison {
 }
 
 function analyzePurchase(
-  rawPrice: number, 
+  rawPrice: number,
   settings: UserSettings
 ): PurchaseAnalysis
 
@@ -661,11 +684,12 @@ Also update the overlay (interceptor.ts) to:
 
 Make the work time formatting smart:
 - Under 60 min: "X minutes"
-- 60-90 min: "1 hour X minutes"  
+- 60-90 min: "1 hour X minutes"
 - Over 90 min: "X.X hours"
 ```
 
 ### Success Criteria
+
 - [ ] Overlay shows price with tax added
 - [ ] Work time is calculated correctly
 - [ ] At least 2 comparison items display
@@ -682,6 +706,7 @@ Make the work time formatting smart:
 **Goal:** Add multiple confirmation steps based on friction level setting.
 
 ### Features
+
 - [ ] Add friction level setting to options (Low/Medium/High/Extreme)
 - [ ] Low: Single confirmation with cost display
 - [ ] Medium: Two steps - cost display, then reason selection
@@ -692,6 +717,7 @@ Make the work time formatting smart:
 ### The Steps (High Friction)
 
 **Step 1: Cost Analysis**
+
 ```
 ┌─────────────────────────────────────────┐
 │  [Cost breakdown as shown above]        │
@@ -701,6 +727,7 @@ Make the work time formatting smart:
 ```
 
 **Step 2: Cooling Off Period**
+
 ```
 ┌─────────────────────────────────────────┐
 │  Take a breath.                         │
@@ -714,6 +741,7 @@ Make the work time formatting smart:
 ```
 
 **Step 3: Type Confirmation**
+
 ```
 ┌─────────────────────────────────────────┐
 │  Type "I WANT THIS" to proceed:         │
@@ -739,7 +767,7 @@ Update the extension to:
 
 3. Create a multi-step overlay system in interceptor.ts:
 
-   type ConfirmationStep = 
+   type ConfirmationStep =
      | { type: 'cost-analysis', data: PurchaseAnalysis }
      | { type: 'reason-select', options: string[] }
      | { type: 'cooldown', seconds: number }
@@ -760,7 +788,7 @@ Update the extension to:
 5. Reason selection options:
    - "To support the streamer"
    - "I genuinely want this reward/emotes"
-   - "Caught up in the moment" ← If selected, show: "That's okay! Consider 
+   - "Caught up in the moment" ← If selected, show: "That's okay! Consider
      waiting and coming back if you still want it later." and auto-cancel
 
 The cooldown timer should:
@@ -775,6 +803,7 @@ The type confirmation should:
 ```
 
 ### Success Criteria
+
 - [ ] All four friction levels work correctly
 - [ ] Timer countdown is smooth and accurate
 - [ ] Type confirmation validates correctly
@@ -792,6 +821,7 @@ The type confirmation should:
 **Goal:** Track and display patterns in blocked purchases.
 
 ### Features
+
 - [ ] Store every intercept event with metadata
 - [ ] Track: timestamp, price, channel, step cancelled at, time spent
 - [ ] Calculate insights: most common cancel step, peak spending times
@@ -807,7 +837,7 @@ interface InterceptEvent {
   priceRaw: number;
   priceWithTax: number;
   workMinutes: number;
-  outcome: 'cancelled' | 'proceeded';
+  outcome: "cancelled" | "proceeded";
   cancelledAtStep?: number;
   totalSteps: number;
   timeSpentMs: number;
@@ -819,13 +849,13 @@ interface InterceptEvent {
 ### Prompt for Claude
 
 ```
-I want to add behavioral tracking to my Mindful Twitch Spending to help me 
+I want to add behavioral tracking to my Mindful Twitch Spending to help me
 understand my spending patterns and where the friction is most effective.
 
 Implement:
 
 1. Create an analytics.ts module with:
-   
+
    interface InterceptEvent {
      id: string;                    // UUID
      timestamp: string;             // ISO date
@@ -869,6 +899,7 @@ Keep last 90 days of data, auto-prune older entries.
 ```
 
 ### Success Criteria
+
 - [ ] Every intercept is logged with full metadata
 - [ ] Popup shows basic stats
 - [ ] "Money saved" calculation is accurate
@@ -885,6 +916,7 @@ Keep last 90 days of data, auto-prune older entries.
 **Goal:** Bypass friction when streaming so you can gift to your own community.
 
 ### Features
+
 - [ ] Add Twitch username to settings
 - [ ] Detect if user is on their own channel
 - [ ] Detect if channel is currently live
@@ -898,36 +930,37 @@ Keep last 90 days of data, auto-prune older entries.
 ```typescript
 async function shouldBypassFriction(settings: UserSettings): Promise<{
   bypass: boolean;
-  reason: 'live' | 'grace-period' | 'manual' | null;
+  reason: "live" | "grace-period" | "manual" | null;
   gracePeriodRemaining?: number;
 }> {
   const currentChannel = getCurrentChannel(); // from URL
-  const isOwnChannel = currentChannel.toLowerCase() === settings.twitchUsername.toLowerCase();
-  
+  const isOwnChannel =
+    currentChannel.toLowerCase() === settings.twitchUsername.toLowerCase();
+
   if (!isOwnChannel) {
     return { bypass: false, reason: null };
   }
-  
+
   const isLive = await detectIfLive();
-  
+
   if (isLive) {
-    await storage.set('lastSeenLive', Date.now());
-    return { bypass: true, reason: 'live' };
+    await storage.set("lastSeenLive", Date.now());
+    return { bypass: true, reason: "live" };
   }
-  
+
   // Check grace period
-  const lastLive = await storage.get('lastSeenLive');
+  const lastLive = await storage.get("lastSeenLive");
   const gracePeriodMs = settings.gracePeriodMinutes * 60 * 1000;
   const elapsed = Date.now() - lastLive;
-  
+
   if (elapsed < gracePeriodMs) {
-    return { 
-      bypass: true, 
-      reason: 'grace-period',
-      gracePeriodRemaining: Math.ceil((gracePeriodMs - elapsed) / 60000)
+    return {
+      bypass: true,
+      reason: "grace-period",
+      gracePeriodRemaining: Math.ceil((gracePeriodMs - elapsed) / 60000),
     };
   }
-  
+
   return { bypass: false, reason: null };
 }
 ```
@@ -935,7 +968,7 @@ async function shouldBypassFriction(settings: UserSettings): Promise<{
 ### Prompt for Claude
 
 ```
-I need to add Streaming Mode to my Mindful Twitch Spending so I can gift subs 
+I need to add Streaming Mode to my Mindful Twitch Spending so I can gift subs
 to my own community while streaming without the friction overlay.
 
 Implement:
@@ -949,17 +982,17 @@ Implement:
 2. Add these fields to the options page
 
 3. Create streamingMode.ts with:
-   
+
    - getCurrentChannel(): string
      Extract channel name from window.location.pathname
-   
+
    - detectIfLive(): Promise<boolean>
      Try multiple detection methods:
      a) Look for '[data-a-target="live-indicator"]' in DOM
      b) Look for '[data-a-target="player-state-live"]'
      c) Parse JSON-LD metadata for isLiveBroadcast
      Return true if ANY method indicates live
-   
+
    - shouldBypassFriction(settings): Promise<BypassResult>
      Logic as described above
 
@@ -984,6 +1017,7 @@ The toast notification should:
 ```
 
 ### Success Criteria
+
 - [ ] Streaming mode activates only on user's own channel
 - [ ] Live detection works reliably
 - [ ] Grace period extends bypass after stream ends
@@ -993,6 +1027,7 @@ The toast notification should:
 - [ ] Disabling streaming mode makes it always show friction
 
 ### Validation Steps
+
 1. Set your Twitch username in options
 2. Go to your own channel while NOT live → Should show friction
 3. Start a test stream (or have a friend verify on their live channel)
@@ -1013,6 +1048,7 @@ The toast notification should:
 ### Testing Checklist
 
 **Basic Flow:**
+
 - [ ] Fresh install → Options page prompts for setup
 - [ ] Settings save and load correctly
 - [ ] Overlay appears on subscribe click
@@ -1023,6 +1059,7 @@ The toast notification should:
 - [ ] Proceed allows the purchase
 
 **Calculations:**
+
 - [ ] Tax calculation is accurate
 - [ ] Work hours calculation is accurate
 - [ ] Comparisons display correctly
@@ -1030,6 +1067,7 @@ The toast notification should:
 - [ ] Edge case: Very large price handled
 
 **Streaming Mode:**
+
 - [ ] Activates only on own channel
 - [ ] Live detection works
 - [ ] Grace period works
@@ -1039,12 +1077,14 @@ The toast notification should:
 - [ ] Auto-expiry works
 
 **Analytics:**
+
 - [ ] Events are recorded
 - [ ] Popup shows accurate stats
 - [ ] Data persists across restarts
 - [ ] Old data is pruned
 
 **Polish:**
+
 - [ ] Overlay styling is clean
 - [ ] Toast styling is clean
 - [ ] Options page is intuitive
@@ -1062,7 +1102,7 @@ The toast notification should:
 ### Prompt for Claude
 
 ```
-I've completed all MVP parts of my Mindful Twitch Spending. Now I need help 
+I've completed all MVP parts of my Mindful Twitch Spending. Now I need help
 with integration testing and polish.
 
 Please help me:
@@ -1099,6 +1139,7 @@ Please help me:
 ```
 
 ### Success Criteria
+
 - [ ] All checklist items pass
 - [ ] Edge cases handled gracefully
 - [ ] No console errors in normal operation
@@ -1115,7 +1156,7 @@ At this point, you have a **fully functional** Mindful Twitch Spending that:
 ✅ Requires multi-step confirmation based on friction level  
 ✅ Tracks spending patterns and blocked purchases  
 ✅ Bypasses when you're streaming to your own community  
-✅ Is polished and handles edge cases  
+✅ Is polished and handles edge cases
 
 **The extension is now genuinely useful for spending discipline!**
 
@@ -1125,11 +1166,12 @@ Optional add-ons below enhance the experience but aren't required.
 
 # Phase 4: Enhancements - Optional Add-ons
 
-*"Once the core works, add features based on need and interest."*
+_"Once the core works, add features based on need and interest."_
 
 These add-ons extend the MVP with additional features. They're ordered from easiest to hardest complexity.
 
 **Rules for Add-ons:**
+
 1. MVP must be 100% working before starting ANY add-on
 2. Each add-on should be independently useful
 3. Add-ons can depend on other add-ons (see dependencies)
@@ -1145,6 +1187,7 @@ These add-ons extend the MVP with additional features. They're ordered from easi
 **Goal:** Add a mandatory waiting period before ANY purchase can proceed.
 
 ### Features
+
 - [ ] Configurable delay (5, 10, 30, 60 seconds)
 - [ ] Visual countdown timer with progress bar
 - [ ] Cannot proceed until timer completes
@@ -1162,6 +1205,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 **Goal:** Show detailed spending history in a dedicated page.
 
 ### Features
+
 - [ ] Full-page view of all tracked purchases
 - [ ] Filter by: date range, channel, outcome
 - [ ] Sort by: date, amount, channel
@@ -1178,6 +1222,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 **Goal:** Set daily/weekly/monthly limits and get warned when approaching.
 
 ### Features
+
 - [ ] Configurable limits (daily, weekly, monthly)
 - [ ] Progress bar in overlay: "You've spent $X of $Y today"
 - [ ] Warning at 80%: "You're approaching your daily limit"
@@ -1194,6 +1239,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 **Goal:** Let users define their own "this equals X" comparisons.
 
 ### Features
+
 - [ ] Add custom items in options: name, icon, price
 - [ ] Examples: "coffees", "lunch", "monthly subscriptions"
 - [ ] Show in overlay alongside default comparisons
@@ -1209,6 +1255,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 **Goal:** Different friction levels for different streamers.
 
 ### Features
+
 - [ ] Maintain a list of streamers with custom settings
 - [ ] "Always allow" list (no friction)
 - [ ] "Extra friction" list (always extreme)
@@ -1225,6 +1272,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 **Goal:** Export spending data for external analysis.
 
 ### Features
+
 - [ ] Export all data as JSON
 - [ ] Export as CSV for spreadsheets
 - [ ] Choose date range for export
@@ -1240,6 +1288,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 **Goal:** Share spending with a trusted person for accountability.
 
 ### Features
+
 - [ ] Generate shareable link to view-only dashboard
 - [ ] Partner sees: total spent, recent purchases, blocked count
 - [ ] Optional: Partner can adjust your friction level remotely
@@ -1256,6 +1305,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 **Goal:** Post to Discord when you make a purchase (for accountability).
 
 ### Features
+
 - [ ] Configure Discord webhook URL
 - [ ] Choose what to post: all purchases, over $X, proceeded after blocking
 - [ ] Customize message format
@@ -1267,7 +1317,7 @@ This is simpler than the multi-step cooldown - it's a single timer that applies 
 ```
 🎮 Twitch Spending Alert
 
-Josh just spent $26.86 on twitch.tv/cohhcarnage
+Josh just spent $26.86 on twitch.tv/ktulue
 That's 46 minutes of work!
 
 They made it through 3 friction steps before proceeding.
@@ -1284,6 +1334,7 @@ Monthly total: $127.50 / $150.00 budget (85%)
 **Goal:** Get a weekly email with your spending summary.
 
 ### Features
+
 - [ ] Set up via Google Apps Script (no server needed)
 - [ ] Weekly digest: spent, blocked, saved, top channels
 - [ ] Trend: "You spent 20% less than last week!"
@@ -1299,6 +1350,7 @@ Monthly total: $127.50 / $150.00 budget (85%)
 **Goal:** Rate purchases 24 hours later to build self-awareness.
 
 ### Features
+
 - [ ] 24 hours after purchase, show notification: "How do you feel about this?"
 - [ ] Rating scale: 😊 Glad I did it → 😐 Neutral → 😞 Regret it
 - [ ] Track regret patterns over time
@@ -1317,13 +1369,15 @@ Monthly total: $127.50 / $150.00 budget (85%)
 ### The Concept
 
 Every time you cancel/block a purchase, that's money you DIDN'T spend. Track these "saves" and:
+
 1. Show cumulative "saved" amount for the month
 2. Compare against your monthly Twitch budget
 3. Reward staying under budget with rollover to next month
 
-This gamifies discipline - you're not just avoiding spending, you're *earning* future spending power.
+This gamifies discipline - you're not just avoiding spending, you're _earning_ future spending power.
 
 ### Features
+
 - [ ] Monthly budget configuration
 - [ ] Track blocked/cancelled purchase amounts
 - [ ] Calculate "saved" vs "spent" each month
@@ -1333,6 +1387,7 @@ This gamifies discipline - you're not just avoiding spending, you're *earning* f
 - [ ] Celebration messages for staying under budget
 
 ### The Overlay Shows:
+
 ```
 📊 BUDGET CHECK
 
@@ -1356,6 +1411,7 @@ Remaining after: -$4.00 ⚠️
 **Goal:** Visual dashboard with historical tracking via Google Sheets.
 
 ### Features
+
 - [ ] Full-page analytics dashboard with charts
 - [ ] Monthly/yearly trend visualization
 - [ ] Export to Google Sheets automatically
@@ -1364,6 +1420,7 @@ Remaining after: -$4.00 ⚠️
 - [ ] Insights: "Best month ever!", "Trending up 15%"
 
 ### Google Sheets Integration
+
 - [ ] One-time setup via Google Apps Script
 - [ ] Auto-sync daily/weekly
 - [ ] Sheet structure: Date, Amount, Channel, Outcome, Notes
@@ -1376,19 +1433,20 @@ Remaining after: -$4.00 ⚠️
 
 ## Suggested Stream Schedule
 
-| Stream | Focus | Duration | Content |
-|--------|-------|----------|---------|
-| **Stream 0** | Planning & Research | 1.5-2 hrs | Walk through this document, explain the "why" |
-| **Stream 1** | MVP Parts 1-2 | 2-2.5 hrs | Foundation + Options Page |
-| **Stream 2** | MVP Parts 3-4 | 2-2.5 hrs | Calculations + Multi-Step Flow |
-| **Stream 3** | MVP Parts 5-6 | 2-2.5 hrs | Streaming Mode + Polish |
-| **Stream 4+** | Add-ons | Varies | Pick based on interest |
+| Stream        | Focus               | Duration  | Content                                       |
+| ------------- | ------------------- | --------- | --------------------------------------------- |
+| **Stream 0**  | Planning & Research | 1.5-2 hrs | Walk through this document, explain the "why" |
+| **Stream 1**  | MVP Parts 1-2       | 2-2.5 hrs | Foundation + Options Page                     |
+| **Stream 2**  | MVP Parts 3-4       | 2-2.5 hrs | Calculations + Multi-Step Flow                |
+| **Stream 3**  | MVP Parts 5-6       | 2-2.5 hrs | Streaming Mode + Polish                       |
+| **Stream 4+** | Add-ons             | Varies    | Pick based on interest                        |
 
 ## Stream 0: "Planning & Research" (No Coding!)
 
 **Goal:** Demonstrate that great software starts with research and design.
 
 ### Agenda
+
 1. **The Problem** - Show a Twitch hype train, explain the psychology
 2. **Personal Context** - Why you need this
 3. **Research** - The Reddit inspiration, behavioral economics concepts
@@ -1396,6 +1454,7 @@ Remaining after: -$4.00 ⚠️
 5. **The Document** - Show this planning doc as the deliverable
 
 ### Chat Engagement
+
 - "Have you ever regretted a Twitch purchase?"
 - "What friction level would YOU want?"
 - "Any features you'd add?"
@@ -1404,13 +1463,13 @@ Remaining after: -$4.00 ⚠️
 
 ## Viewer Takeaways by Stream
 
-| Stream | What Viewers Learn |
-|--------|-------------------|
-| 0 | Planning > coding, behavioral economics, project scoping |
-| 1 | Chrome extension basics, Manifest V3, TypeScript setup |
-| 2 | DOM manipulation, event interception, state management |
-| 3 | API detection, Chrome storage, UX polish |
-| 4+ | Specific skills per add-on |
+| Stream | What Viewers Learn                                       |
+| ------ | -------------------------------------------------------- |
+| 0      | Planning > coding, behavioral economics, project scoping |
+| 1      | Chrome extension basics, Manifest V3, TypeScript setup   |
+| 2      | DOM manipulation, event interception, state management   |
+| 3      | API detection, Chrome storage, UX polish                 |
+| 4+     | Specific skills per add-on                               |
 
 ---
 
@@ -1420,27 +1479,27 @@ Remaining after: -$4.00 ⚠️
 
 ```typescript
 // Subscribe button
-'[data-a-target="subscribe-button"]'
-'[data-a-target="subscribed-button"]' // Already subscribed
+'[data-a-target="subscribe-button"]';
+'[data-a-target="subscribed-button"]'; // Already subscribed
 
 // Gift sub modal
-'[data-a-target="gift-button"]'
-'.gift-sub-modal'
+'[data-a-target="gift-button"]';
+".gift-sub-modal";
 
 // Bits
-'[data-a-target="bits-button"]'
-'.bits-buy-modal'
+'[data-a-target="bits-button"]';
+".bits-buy-modal";
 
 // Price display
-'.tw-pd-x-1' // Often contains price text
-'[data-a-target="subscription-price"]'
+".tw-pd-x-1"; // Often contains price text
+'[data-a-target="subscription-price"]';
 
 // Live indicator
-'[data-a-target="live-indicator"]'
-'[data-a-target="player-state-live"]'
+'[data-a-target="live-indicator"]';
+'[data-a-target="player-state-live"]';
 
 // Channel name from URL
-window.location.pathname.split('/')[1]
+window.location.pathname.split("/")[1];
 ```
 
 **Note:** Twitch frequently updates their DOM. These selectors may need updating.
@@ -1449,11 +1508,11 @@ window.location.pathname.split('/')[1]
 
 ```typescript
 const ohioTaxRates: Record<string, number> = {
-  '44124': 8.0,   // Lyndhurst (Cuyahoga County)
-  '44122': 8.0,   // Beachwood
-  '44106': 8.0,   // Cleveland
-  '43215': 7.5,   // Columbus
-  '45202': 7.0,   // Cincinnati
+  "44124": 8.0, // Lyndhurst (Cuyahoga County)
+  "44122": 8.0, // Beachwood
+  "44106": 8.0, // Cleveland
+  "43215": 7.5, // Columbus
+  "45202": 7.0, // Cincinnati
   // ... etc
 };
 ```
