@@ -9,57 +9,80 @@ MTS intercepts Twitch checkout flows (gifting subs, subscribing, Bits purchases)
 - Shows the **real cost** including sales tax
 - Converts the cost to **hours of work** based on your take-home pay
 - Requires **multi-step confirmation** before proceeding
+- Compares the purchase to relatable real-world items (e.g., "That's 16 Costco hot dogs")
 - Optionally bypasses friction during **streaming mode** (so you can gift to your community while live)
 
 ## Features
 
-- 🛑 Intercept Twitch checkout flows
-- 💰 Calculate cost with configurable sales tax rate
-- ⏱️ Convert cost to work hours (based on your hourly take-home)
-- ✅ Multi-step confirmation prompts
-- 🎥 Streaming mode bypass (detects when you're live on your own channel)
+- 🛑 Intercepts gift subs, subs, and Bits purchases before they go through
+- 💰 Calculates true cost with configurable sales tax rate
+- ⏱️ Converts cost to work hours based on your take-home hourly rate
+- 🔢 Multi-step friction flow — each comparison item is its own confirmation step
+- 📊 Daily spending cap with silent bypass below budget and full friction when over
+- ⏳ Spending cooldown — enforces a waiting period after each purchase
+- 🎥 Streaming mode — detects when you're live on your own channel and bypasses friction automatically, with a configurable grace period after your stream ends
+- ⭐ Channel whitelist — skip, reduce, or track-only friction for channels you intentionally support
+- 📋 Activity log — full history of intercepts, decisions, and settings changes
+- 🔔 Toast notifications for silent bypass events (budget bypass, streaming mode, whitelisted channels)
 
 ## Installation
 
-*Coming soon - not yet published to Chrome Web Store*
+*Not yet published to the Chrome Web Store.*
 
 For development:
 1. Clone this repository
-2. Open Chrome → `chrome://extensions/`
-3. Enable "Developer mode"
-4. Click "Load unpacked" and select the `src` folder
+2. Run `npm install` then `npm run build`
+3. Open Chrome → `chrome://extensions/`
+4. Enable "Developer mode"
+5. Click "Load unpacked" and select the project root folder (where `manifest.json` lives)
 
 ## Configuration
 
-After installation, click the extension icon to configure:
+Click the extension icon (or right-click → Options) to open the settings page:
 
-- **Take-home hourly rate** - Used to calculate "hours of work"
-- **Sales tax rate** - Default: 7.5% (Ohio)
-- **Twitch username** - For streaming mode detection
-- **Enable streaming mode** - Bypass prompts when you're live
+- **Hourly rate** — Your take-home pay, used to calculate "X hours of work"
+- **Sales tax rate** — Added to the displayed price to show true cost
+- **Comparison items** — Toggle preset items on/off; add your own with a custom name, emoji, and price
+- **Daily spending cap** — Set a daily limit; purchases under the cap pass through silently with a toast
+- **Spending cooldown** — Block further purchases for 5/10/30 minutes after each one
+- **Friction thresholds** — Set floor/ceiling dollar amounts to control nudge vs. full friction
+- **Streaming mode** — Enter your Twitch username; friction bypasses while you're live and during a configurable grace period after your stream ends
+- **Channel whitelist** — Add channels with Skip (no friction), Reduced (toast only), or Track-Only (full friction with a note) behavior
+- **Toast duration** — How long silent-bypass notifications stay on screen
 
 ## Tech Stack
 
 - TypeScript
 - Chrome Extension Manifest V3
-- Twitch API (for live detection)
+- Webpack
+- Live detection via DOM selectors (no Twitch API required)
 
 ## Project Structure
 
 ```
 MTS/
-├── README.md
-├── LICENSE (GPL v3)
-├── DESIGN.md
 ├── manifest.json
+├── package.json
+├── assets/
+│   └── icons/
 └── src/
-    ├── background.ts
-    ├── content.ts
-    ├── popup/
-    │   ├── popup.html
-    │   └── popup.ts
-    ├── streaming-mode.ts
-    └── utils/
+    ├── background/
+    │   └── serviceWorker.ts
+    ├── content/
+    │   ├── index.ts           # Entry point, sets up observer + interceptor
+    │   ├── interceptor.ts     # Overlay flow, friction logic, click handling
+    │   ├── detector.ts        # Purchase button detection, price extraction
+    │   ├── streamingMode.ts   # Live detection, grace period, bypass logic
+    │   └── styles.css
+    ├── options/
+    │   ├── options.html
+    │   └── options.ts
+    ├── logs/
+    │   ├── logs.html
+    │   └── logs.ts
+    └── shared/
+        ├── types.ts           # Shared interfaces and defaults
+        └── logger.ts          # Event logging to chrome.storage.local
 ```
 
 ## Contributing
