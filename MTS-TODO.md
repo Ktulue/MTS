@@ -1,8 +1,8 @@
-# MTS - What's Left To Do
+# Hype Control - What's Left To Do
 
-**Updated:** 2026-03-05
-**Current Version:** 0.3.45
-**Based On:** MTS-Project-Document.md vs. actual codebase audit
+**Updated:** 2026-03-06
+**Current Version:** 0.4.2
+**Based On:** MTS-Project-Document.md vs. actual codebase audit (MTS was the original project codename)
 
 ---
 
@@ -128,13 +128,13 @@ Core feature is fully implemented. One item remains tied to the not-yet-built po
 
 ### ⚠️ MVP Part 6 — Polish & Edge Cases (PARTIALLY DONE)
 
-**What's implemented:** Error handling, multiple DOM fallback selectors, debounced saves, escape-key dismissal, backdrop click to cancel, version tracking, debug functions (`MTS.testOverlay()`, `MTS.scanButtons()`), inline field validation with error messages, overlay entrance animations (fadeIn + slideIn CSS keyframes). Options page UI polish: responsive two/three-column grid layout on wider screens, centered section headers, styled footer with centered buttons and version number, comparison item deduplication in migration.
+**What's implemented:** Error handling, multiple DOM fallback selectors, debounced saves, escape-key dismissal, backdrop click to cancel, version tracking, debug functions (`HC.testOverlay()`, `HC.scanButtons()`), inline field validation with error messages, overlay entrance animations (fadeIn + slideIn CSS keyframes). Options page UI polish: responsive two/three-column grid layout on wider screens, centered section headers, styled footer with centered buttons and version number, comparison item deduplication in migration.
 
 **What is still MISSING:**
 
 - [x] ~~**Fresh-install onboarding**~~ — ✅ Implemented: `chrome.runtime.onInstalled` handler in `serviceWorker.ts` opens the options page on first install
 - [x] ~~**Focus trap in overlay**~~ — ✅ Implemented: Tab/Shift+Tab wraps between first and last buttons in all modals (see `interceptor.ts`)
-- [x] ~~**Overlay entrance animation**~~ — ✅ Implemented: `mts-fadeIn` on backdrop, `mts-slideIn` on modal (see `styles.css`)
+- [x] ~~**Overlay entrance animation**~~ — ✅ Implemented: `hc-fadeIn` on backdrop, `hc-slideIn` on modal (see `styles.css`)
 - [ ] **Keyboard: Enter to confirm** — Where applicable (e.g., type-to-confirm step, final step). Not implemented (blocked on those steps not existing yet)
 - [x] ~~**ARIA attributes audit**~~ — ✅ All overlay modals (main, comparison, cooldown) have `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, and `aria-describedby`
 - [x] ~~**"No price detected" fallback**~~ — ✅ Verified: overlay shows "Price not detected" as the price display and "Unable to detect price. Proceed with caution." when `priceValue` is null (see `interceptor.ts:355-361`)
@@ -240,4 +240,4 @@ Listed in order of complexity per the planning doc.
 
 ---
 
-_Last updated 2026-03-05 against the v0.3.45 codebase._
+_Last updated 2026-03-06 against the v0.4.2 codebase._

@@ -1,5 +1,5 @@
 /**
- * Types for Mindful Twitch Spending extension
+ * Types for Hype Control extension
  */
 
 /** Types of purchases we can detect on Twitch */

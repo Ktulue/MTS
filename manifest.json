@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Mindful Twitch Spending",
-  "version": "0.3.45",
+  "name": "Hype Control",
+  "version": "0.4.2",
   "description": "Create intentional friction before Twitch purchases to encourage mindful spending",
   "permissions": [
     "storage",
@@ -21,20 +21,8 @@
       "run_at": "document_idle"
     }
   ],
-  "icons": {
-    "16": "assets/icons/icon-16.png",
-    "32": "assets/icons/icon-32.png",
-    "48": "assets/icons/icon-48.png",
-    "128": "assets/icons/icon-128.png"
-  },
   "action": {
-    "default_title": "Mindful Twitch Spending - Click for settings",
-    "default_icon": {
-      "16": "assets/icons/icon-16.png",
-      "32": "assets/icons/icon-32.png",
-      "48": "assets/icons/icon-48.png",
-      "128": "assets/icons/icon-128.png"
-    }
+    "default_title": "Hype Control - Click for settings"
   },
   "options_page": "options.html"
 }

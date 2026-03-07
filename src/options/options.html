@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>MTS Settings</title>
+  <title>Hype Control Settings</title>
   <style>
     * {
       box-sizing: border-box;
@@ -28,7 +28,7 @@
       min-width: 400px;
     }
 
-    body.mts-light {
+    body.hc-light {
       --opt-bg: #f5f5f5;
       --opt-bg-card: #ffffff;
       --opt-bg-inset: #f0f0f2;
@@ -713,15 +713,15 @@
 <body>
   <div class="header">
     <span class="header-icon">&#x1F6E1;&#xFE0F;</span>
-    <h1 class="header-title">MTS Settings</h1>
+    <h1 class="header-title">Hype Control Settings</h1>
   </div>
 
   <div class="container">
     <!-- Welcome Banner (first-run onboarding) -->
     <div id="welcome-banner" class="welcome-banner" style="display: none;">
       <button id="welcome-dismiss" class="welcome-dismiss" title="Dismiss">&times;</button>
-      <h2 class="welcome-title">Welcome to Mindful Twitch Spending!</h2>
-      <p class="welcome-text">Set your hourly rate below to get started. MTS will use it to show how much work each Twitch purchase really costs.</p>
+      <h2 class="welcome-title">Welcome to Hype Control!</h2>
+      <p class="welcome-text">Set your hourly rate below to get started. Hype Control will use it to show how much work each Twitch purchase really costs.</p>
     </div>
 
     <!-- Row 1 (3-col): Income, Tax, Daily Cap -->
@@ -730,7 +730,7 @@
       <h2 class="section-title">Income Settings</h2>
 
       <div class="form-group">
-        <label for="hourly-rate">Hourly Rate (after tax) <span class="info-icon" data-tooltip="Your take-home hourly pay. MTS uses this to calculate how many minutes of work a purchase costs you." tabindex="0">i</span></label>
+        <label for="hourly-rate">Hourly Rate (after tax) <span class="info-icon" data-tooltip="Your take-home hourly pay. Hype Control uses this to calculate how many minutes of work a purchase costs you." tabindex="0">i</span></label>
         <div class="input-wrapper">
           <span class="input-prefix">$</span>
           <input type="number" id="hourly-rate" min="0" step="0.01" placeholder="35.00">
@@ -746,7 +746,7 @@
       <h2 class="section-title">Tax Settings</h2>
 
       <div class="form-group">
-        <label for="tax-rate">Sales Tax Rate <span class="info-icon" data-tooltip="Your local sales tax rate. MTS adds this to the purchase price to show the true cost. Ohio default: 8%." tabindex="0">i</span></label>
+        <label for="tax-rate">Sales Tax Rate <span class="info-icon" data-tooltip="Your local sales tax rate. Hype Control adds this to the purchase price to show the true cost. Ohio default: 8%." tabindex="0">i</span></label>
         <div class="input-wrapper">
           <input type="number" id="tax-rate" min="0" max="100" step="0.1" placeholder="7.5">
           <span class="input-suffix">%</span>
@@ -758,7 +758,7 @@
 
     <!-- Daily Spending Cap -->
     <div class="section">
-      <h2 class="section-title">Daily Spending Cap <span class="info-icon" data-tooltip="Set a daily spending limit. MTS escalates friction as you approach the cap and blocks purchases once exceeded." tabindex="0">i</span></h2>
+      <h2 class="section-title">Daily Spending Cap <span class="info-icon" data-tooltip="Set a daily spending limit. Hype Control escalates friction as you approach the cap and blocks purchases once exceeded." tabindex="0">i</span></h2>
       <p class="help-text" style="margin-bottom: 12px;">
         Set a daily limit to keep spending in check
       </p>
@@ -856,7 +856,7 @@
 
       <div class="toggle-row">
         <span class="toggle-label">
-          <span class="toggle-name">Enable threshold tiers <span class="info-icon" data-tooltip="Enable to set dollar thresholds that control how much friction MTS applies. Below the lower threshold = no friction. Between = soft nudge. Above = full modal." tabindex="0">i</span></span>
+          <span class="toggle-name">Enable threshold tiers <span class="info-icon" data-tooltip="Enable to set dollar thresholds that control how much friction Hype Control applies. Below the lower threshold = no friction. Between = soft nudge. Above = full modal." tabindex="0">i</span></span>
         </span>
         <label class="toggle-switch">
           <input type="checkbox" id="thresholds-enabled">
@@ -895,7 +895,7 @@
 
     <!-- Spending Cooldown -->
     <div class="section">
-      <h2 class="section-title">Spending Cooldown <span class="info-icon" data-tooltip="After you proceed with a purchase, MTS enforces a waiting period before allowing the next one through without friction." tabindex="0">i</span></h2>
+      <h2 class="section-title">Spending Cooldown <span class="info-icon" data-tooltip="After you proceed with a purchase, Hype Control enforces a waiting period before allowing the next one through without friction." tabindex="0">i</span></h2>
       <p class="help-text" style="margin-bottom: 12px;">
         Enforce a waiting period after proceeding with a purchase
       </p>
@@ -967,7 +967,7 @@
 
     <!-- Channel Whitelist -->
     <div class="section">
-      <h2 class="section-title">Channel Whitelist <span class="info-icon" data-tooltip="Add Twitch channels where you've planned your support. MTS will reduce or skip friction for these channels." tabindex="0">i</span></h2>
+      <h2 class="section-title">Channel Whitelist <span class="info-icon" data-tooltip="Add Twitch channels where you've planned your support. Hype Control will reduce or skip friction for these channels." tabindex="0">i</span></h2>
       <p class="help-text" style="margin-bottom: 12px;">
         Bypass or reduce friction for channels you intentionally support.
         <strong>Spending is still tracked for whitelisted channels.</strong>
@@ -996,7 +996,7 @@
       <h2 class="section-title">Display Preferences</h2>
 
       <div class="form-group">
-        <label for="theme-preference">Overlay theme <span class="info-icon" data-tooltip="Controls the color scheme of MTS friction overlays. Auto detects whether Twitch is in light or dark mode and matches it." tabindex="0">i</span></label>
+        <label for="theme-preference">Overlay theme <span class="info-icon" data-tooltip="Controls the color scheme of Hype Control friction overlays. Auto detects whether Twitch is in light or dark mode and matches it." tabindex="0">i</span></label>
         <select id="theme-preference">
           <option value="auto">Auto (match Twitch)</option>
           <option value="light">Light</option>
@@ -1027,7 +1027,7 @@
       <button class="btn btn-secondary" id="btn-logs">View Activity Logs</button>
     </div>
 
-    <div class="version" id="version">MTS v0.0.0</div>
+    <div class="version" id="version">HC v0.0.0</div>
   </div>
 
   <script src="options.js"></script>

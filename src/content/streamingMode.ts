@@ -7,7 +7,7 @@ import { UserSettings } from '../shared/types';
 import { getCurrentChannel } from './detector';
 import { log } from '../shared/logger';
 
-const STREAMING_STATE_KEY = 'mtsStreamingState';
+const STREAMING_STATE_KEY = 'hcStreamingState';
 
 interface StreamingState {
   streamEndedAt: number | null;
@@ -151,7 +151,7 @@ export async function checkAndUpdateLiveStatus(settings: UserSettings): Promise<
  * Badge is removed when outside the grace period.
  */
 export async function updateGracePeriodBadge(settings: UserSettings): Promise<void> {
-  const existingBadge = document.getElementById('mts-grace-badge');
+  const existingBadge = document.getElementById('hc-grace-badge');
 
   const state = await loadStreamingState();
   if (!state.streamEndedAt) {
@@ -170,7 +170,7 @@ export async function updateGracePeriodBadge(settings: UserSettings): Promise<vo
 
   const minutesLeft = Math.ceil(remaining / 60000);
   const badge = existingBadge || document.createElement('div');
-  badge.id = 'mts-grace-badge';
+  badge.id = 'hc-grace-badge';
   badge.textContent = `Grace Period: ${minutesLeft}m remaining`;
 
   if (!existingBadge) {

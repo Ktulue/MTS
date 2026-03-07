@@ -1,5 +1,5 @@
 /**
- * MTS Background Service Worker
+ * HC Background Service Worker
  * Handles extension icon click to open options page
  */
 

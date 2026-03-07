@@ -210,12 +210,21 @@ function extractPrice(element: HTMLElement): { raw: string | null; value: number
   const text = element.textContent || '';
   const ariaLabel = element.getAttribute('aria-label') || '';
 
-  // Check for dollar price first
+  // Check for dollar price in textContent first
   const priceMatch = text.match(PRICE_REGEX);
   if (priceMatch) {
     return {
       raw: priceMatch[0],
       value: parsePrice(priceMatch[1]),
+    };
+  }
+
+  // Check for dollar price in aria-label (e.g. "Subscribe: 15% off $30.55")
+  const ariaPrice = ariaLabel.match(PRICE_REGEX);
+  if (ariaPrice) {
+    return {
+      raw: ariaPrice[0],
+      value: parsePrice(ariaPrice[1]),
     };
   }
 

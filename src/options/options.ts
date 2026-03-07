@@ -1,5 +1,5 @@
 /**
- * MTS Options Page - Settings management
+ * HC Options Page - Settings management
  */
 
 import {
@@ -10,7 +10,7 @@ import {
 import { settingsLog, loadLogs, setVersion } from '../shared/logger';
 
 /** Storage key for user settings */
-const SETTINGS_KEY = 'mtsSettings';
+const SETTINGS_KEY = 'hcSettings';
 
 /** Tracks whether the add form is in edit mode (holds the item ID being edited) */
 let editingItemId: string | null = null;
@@ -769,7 +769,7 @@ async function changeWhitelistBehavior(username: string, behavior: WhitelistBeha
  * 'auto' and 'dark' both use dark (the options page isn't on Twitch, so auto = dark).
  */
 function applyOptionsTheme(theme: string): void {
-  document.body.classList.toggle('mts-light', theme === 'light');
+  document.body.classList.toggle('hc-light', theme === 'light');
 }
 
 /**
@@ -1015,24 +1015,24 @@ function showTrackerStatus(message: string, type: 'success' | 'error'): void {
  * Reset the spending tracker stored in local storage
  */
 async function handleResetTracker(): Promise<void> {
-  await chrome.storage.local.remove('mtsSpending');
+  await chrome.storage.local.remove('hcSpending');
   showTrackerStatus('✅ Spending tracker reset', 'success');
   const dataEl = document.getElementById('tracker-data') as HTMLPreElement;
   if (dataEl) dataEl.style.display = 'none';
 }
 
 /**
- * Display the raw mtsSpending JSON for debugging
+ * Display the raw hcSpending JSON for debugging
  */
 async function handleViewTracker(): Promise<void> {
-  const result = await chrome.storage.local.get('mtsSpending');
+  const result = await chrome.storage.local.get('hcSpending');
   const dataEl = document.getElementById('tracker-data') as HTMLPreElement;
   if (!dataEl) return;
   if (dataEl.style.display === 'block') {
     dataEl.style.display = 'none';
     return;
   }
-  dataEl.textContent = JSON.stringify(result['mtsSpending'] ?? null, null, 2);
+  dataEl.textContent = JSON.stringify(result['hcSpending'] ?? null, null, 2);
   dataEl.style.display = 'block';
 }
 
@@ -1052,7 +1052,7 @@ function displayVersion(): void {
   const versionEl = document.getElementById('version');
   if (versionEl) {
     const manifest = chrome.runtime.getManifest();
-    versionEl.textContent = `MTS v${manifest.version}`;
+    versionEl.textContent = `HC v${manifest.version}`;
   }
 }
 
@@ -1061,8 +1061,8 @@ function displayVersion(): void {
  * if this is the user's first run (no settings saved yet).
  */
 async function initOnboarding(): Promise<void> {
-  const result = await chrome.storage.sync.get('mtsWelcomeDismissed');
-  if (result.mtsWelcomeDismissed) return;
+  const result = await chrome.storage.sync.get('hcWelcomeDismissed');
+  if (result.hcWelcomeDismissed) return;
 
   const banner = document.getElementById('welcome-banner');
   const incomeSection = document.getElementById('section-income');
@@ -1078,7 +1078,7 @@ function dismissOnboarding(): void {
   const incomeSection = document.getElementById('section-income');
   if (banner) banner.style.display = 'none';
   if (incomeSection) incomeSection.classList.remove('onboarding-highlight');
-  chrome.storage.sync.set({ mtsWelcomeDismissed: true });
+  chrome.storage.sync.set({ hcWelcomeDismissed: true });
 }
 
 // Initialize when DOM is ready

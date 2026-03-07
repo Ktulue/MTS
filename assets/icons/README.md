@@ -1,4 +1,4 @@
-# MTS Icons
+# HC Icons
 
 This folder should contain the extension icons in the following sizes:
 - icon16.png (16x16)
@@ -14,7 +14,7 @@ For development, you can use any placeholder images or generate them using an on
 
 - Purple theme (#9146FF - Twitch purple)
 - Shield or guardian motif
-- "MTS" text if space allows
+- "HC" text if space allows
 - Should be legible at 16x16
 
 ## Community Contest

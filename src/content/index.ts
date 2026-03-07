@@ -1,5 +1,5 @@
 /**
- * Mindful Twitch Spending - Content Script Entry Point
+ * Hype Control - Content Script Entry Point
  *
  * This script runs on all Twitch pages and sets up:
  * 1. Purchase detection via MutationObserver
@@ -15,7 +15,7 @@ import { log, debug, error, setVersion, loadLogs } from '../shared/logger';
 import { migrateSettings, DEFAULT_SETTINGS } from '../shared/types';
 import './styles.css';
 
-const SETTINGS_KEY = 'mtsSettings';
+const SETTINGS_KEY = 'hcSettings';
 
 async function loadSettings() {
   try {
@@ -27,7 +27,7 @@ async function loadSettings() {
 }
 
 /** Current extension version */
-const VERSION = '0.3.45';
+const VERSION = '0.4.0';
 
 // Set version immediately so logger can check for updates
 setVersion(VERSION);
@@ -39,8 +39,8 @@ loadLogs();
  */
 function showLoadedIndicator(): void {
   const badge = document.createElement('div');
-  badge.id = 'mts-loaded-badge';
-  badge.innerHTML = '🛡️ MTS Active';
+  badge.id = 'hc-loaded-badge';
+  badge.innerHTML = '🛡️ HC Active';
   badge.style.cssText = `
     position: fixed;
     bottom: 10px;
@@ -130,7 +130,7 @@ function scanForButtons(): void {
 // Extension initialization
 function init(): void {
   try {
-    log('Mindful Twitch Spending initializing...');
+    log('Hype Control initializing...');
     log('URL:', window.location.href);
     log('Current channel:', getCurrentChannel());
 
@@ -163,7 +163,7 @@ function init(): void {
     }, 2000);
 
     log('Extension active and watching for purchases');
-    log('Open DevTools Console to see debug messages (filter by [MTS])');
+    log('Open DevTools Console to see debug messages (filter by [HC])');
   } catch (err) {
     error('Failed to initialize:', err);
   }
@@ -199,7 +199,7 @@ urlObserver.observe(document.body, {
 // Expose debug functions to window for console testing
 declare global {
   interface Window {
-    MTS: {
+    HC: {
       testOverlay: () => void;
       scanButtons: () => void;
       version: string;
@@ -209,7 +209,7 @@ declare global {
 
 /**
  * Test function to show overlay without clicking a button
- * Call from console: MTS.testOverlay()
+ * Call from console: HC.testOverlay()
  */
 function testOverlay(): void {
   log('Testing overlay display...');
@@ -225,30 +225,30 @@ function testOverlay(): void {
 
   // Create overlay directly
   const overlay = document.createElement('div');
-  overlay.id = 'mts-overlay';
-  overlay.className = 'mts-overlay';
+  overlay.id = 'hc-overlay';
+  overlay.className = 'hc-overlay';
   overlay.innerHTML = `
-    <div class="mts-modal">
-      <div class="mts-header">
-        <span class="mts-icon">🛡️</span>
-        <h2 class="mts-title">SPENDING GUARDIAN</h2>
+    <div class="hc-modal">
+      <div class="hc-header">
+        <span class="hc-icon">🛡️</span>
+        <h2 class="hc-title">SPENDING GUARDIAN</h2>
       </div>
-      <div class="mts-content">
-        <div class="mts-price-section">
-          <p class="mts-label">TEST MODE - You're about to spend:</p>
-          <p class="mts-price">${testAttempt.rawPrice}</p>
+      <div class="hc-content">
+        <div class="hc-price-section">
+          <p class="hc-label">TEST MODE - You're about to spend:</p>
+          <p class="hc-price">${testAttempt.rawPrice}</p>
         </div>
-        <div class="mts-info">
-          <p class="mts-channel">Channel: <strong>${testAttempt.channel}</strong></p>
-          <p class="mts-type">Type: <strong>Subscription</strong></p>
+        <div class="hc-info">
+          <p class="hc-channel">Channel: <strong>${testAttempt.channel}</strong></p>
+          <p class="hc-type">Type: <strong>Subscription</strong></p>
         </div>
-        <p class="mts-message">
+        <p class="hc-message">
           This is a TEST overlay. Click Cancel or Proceed to dismiss.
         </p>
       </div>
-      <div class="mts-actions">
-        <button class="mts-btn mts-btn-cancel" data-action="cancel">Cancel</button>
-        <button class="mts-btn mts-btn-proceed" data-action="proceed">Proceed Anyway</button>
+      <div class="hc-actions">
+        <button class="hc-btn hc-btn-cancel" data-action="cancel">Cancel</button>
+        <button class="hc-btn hc-btn-proceed" data-action="proceed">Proceed Anyway</button>
       </div>
     </div>
   `;
@@ -267,10 +267,10 @@ function testOverlay(): void {
 }
 
 // Expose to window
-window.MTS = {
+window.HC = {
   testOverlay,
   scanButtons: scanForButtons,
   version: VERSION,
 };
 
-log('Debug functions available: MTS.testOverlay(), MTS.scanButtons()');
+log('Debug functions available: HC.testOverlay(), HC.scanButtons()');

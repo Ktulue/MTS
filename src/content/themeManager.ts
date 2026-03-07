@@ -1,8 +1,8 @@
 /**
- * MTS Theme Manager
+ * HC Theme Manager
  *
  * Detects Twitch's light/dark mode via the --color-background-base CSS variable
- * and applies .mts-light or .mts-dark to MTS overlay elements.
+ * and applies .hc-light or .hc-dark to HC overlay elements.
  *
  * Supports three modes:
  *   - auto: follows Twitch's theme (observed via MutationObserver)
@@ -12,7 +12,7 @@
 import { ThemePreference, migrateSettings, DEFAULT_SETTINGS } from '../shared/types';
 import { debug } from '../shared/logger';
 
-const SETTINGS_KEY = 'mtsSettings';
+const SETTINGS_KEY = 'hcSettings';
 const TWITCH_BG_VAR = '--color-background-base';
 const LIGHT_BG = '#ffffff';
 
@@ -36,23 +36,23 @@ function resolveTheme(pref: ThemePreference): 'light' | 'dark' {
   return detectTwitchTheme();
 }
 
-/** Apply theme class to all current and future MTS overlays */
+/** Apply theme class to all current and future HC overlays */
 function applyTheme(theme: 'light' | 'dark'): void {
-  if (theme === resolvedTheme && document.querySelectorAll('.mts-overlay').length > 0) {
+  if (theme === resolvedTheme && document.querySelectorAll('.hc-overlay').length > 0) {
     // Already applied and overlays exist — check if classes match
-    const overlay = document.querySelector('.mts-overlay');
-    if (overlay?.classList.contains(`mts-${theme}`)) return;
+    const overlay = document.querySelector('.hc-overlay');
+    if (overlay?.classList.contains(`hc-${theme}`)) return;
   }
   resolvedTheme = theme;
 
-  document.querySelectorAll('.mts-overlay').forEach(el => {
-    el.classList.remove('mts-light', 'mts-dark');
-    el.classList.add(`mts-${theme}`);
+  document.querySelectorAll('.hc-overlay').forEach(el => {
+    el.classList.remove('hc-light', 'hc-dark');
+    el.classList.add(`hc-${theme}`);
   });
 
-  document.querySelectorAll('.mts-nudge').forEach(el => {
-    el.classList.remove('mts-light', 'mts-dark');
-    el.classList.add(`mts-${theme}`);
+  document.querySelectorAll('.hc-nudge').forEach(el => {
+    el.classList.remove('hc-light', 'hc-dark');
+    el.classList.add(`hc-${theme}`);
   });
 }
 
@@ -61,7 +61,7 @@ function onStyleMutation(): void {
   if (currentPreference !== 'auto') return;
   const detected = detectTwitchTheme();
   if (detected !== resolvedTheme) {
-    debug(`Twitch theme changed to ${detected}, updating MTS overlays`);
+    debug(`Twitch theme changed to ${detected}, updating HC overlays`);
     applyTheme(detected);
   }
 }
@@ -87,8 +87,8 @@ function stopTwitchObserver(): void {
  * Applies the current resolved theme class immediately.
  */
 export function applyThemeToOverlay(overlayEl: HTMLElement): void {
-  overlayEl.classList.remove('mts-light', 'mts-dark');
-  overlayEl.classList.add(`mts-${resolvedTheme}`);
+  overlayEl.classList.remove('hc-light', 'hc-dark');
+  overlayEl.classList.add(`hc-${resolvedTheme}`);
 }
 
 /** Update preference (called when settings change) */

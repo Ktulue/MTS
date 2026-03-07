@@ -13,7 +13,8 @@
       "Bash(magick:*)",
       "Bash(git:*)",
       "Bash(GIT_DIR=\"G:/Claude Code/MTS/.git\" git show:*)",
-      "Bash(MSYS_NO_PATHCONV=1 git:*)"
+      "Bash(MSYS_NO_PATHCONV=1 git:*)",
+      "Bash(GIT_DIR=\"G:/Claude Code/MTS/.git\" git diff:*)"
     ]
   }
 }

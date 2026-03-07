@@ -1,5 +1,5 @@
 /**
- * Centralized logging system for MTS
+ * Centralized logging system for Hype Control
  *
  * Two separate log stores:
  *   - Extension Log: friction flow events, button detection, overlay interactions
@@ -17,9 +17,9 @@ export interface LogEntry {
 }
 
 const MAX_LOGS = 200;
-const EXTENSION_LOG_KEY = 'mtsExtensionLog';
-const SETTINGS_LOG_KEY = 'mtsSettingsLog';
-const VERSION_KEY = 'mtsVersion';
+const EXTENSION_LOG_KEY = 'hcExtensionLog';
+const SETTINGS_LOG_KEY = 'hcSettingsLog';
+const VERSION_KEY = 'hcVersion';
 
 /** Pending buffers — one per log store */
 let pendingExtension: LogEntry[] = [];
@@ -76,7 +76,7 @@ function scheduleSave(
       await chrome.storage.local.set({ [storageKey]: stored });
       clearPending();
     } catch (e) {
-      console.error('[MTS] Failed to save logs:', e);
+      console.error('[HC] Failed to save logs:', e);
     }
   }, 100));
 }
@@ -129,7 +129,7 @@ export async function loadLogs(): Promise<void> {
     const storedVersion = result[VERSION_KEY] || '0.0.0';
 
     if (storedVersion !== currentVersion && currentVersion !== '0.0.0') {
-      console.log(`[MTS] Version changed from ${storedVersion} to ${currentVersion} — clearing logs`);
+      console.log(`[HC] Version changed from ${storedVersion} to ${currentVersion} — clearing logs`);
       await chrome.storage.local.set({
         [EXTENSION_LOG_KEY]: [],
         [SETTINGS_LOG_KEY]: [],
@@ -139,7 +139,7 @@ export async function loadLogs(): Promise<void> {
       await chrome.storage.local.set({ [VERSION_KEY]: currentVersion });
     }
   } catch (e) {
-    console.error('[MTS] Failed to load logs:', e);
+    console.error('[HC] Failed to load logs:', e);
   }
 }
 
@@ -150,7 +150,7 @@ export async function getExtensionLogs(): Promise<LogEntry[]> {
     const result = await chrome.storage.local.get(EXTENSION_LOG_KEY);
     return result[EXTENSION_LOG_KEY] || [];
   } catch (e) {
-    console.error('[MTS] Failed to get extension logs:', e);
+    console.error('[HC] Failed to get extension logs:', e);
     return [];
   }
 }
@@ -160,7 +160,7 @@ export async function getSettingsLogs(): Promise<LogEntry[]> {
     const result = await chrome.storage.local.get(SETTINGS_LOG_KEY);
     return result[SETTINGS_LOG_KEY] || [];
   } catch (e) {
-    console.error('[MTS] Failed to get settings logs:', e);
+    console.error('[HC] Failed to get settings logs:', e);
     return [];
   }
 }
@@ -170,14 +170,14 @@ export async function getSettingsLogs(): Promise<LogEntry[]> {
 export function clearExtensionLogs(): void {
   pendingExtension = [];
   try { chrome.storage.local.set({ [EXTENSION_LOG_KEY]: [] }); } catch (e) {
-    console.error('[MTS] Failed to clear extension logs:', e);
+    console.error('[HC] Failed to clear extension logs:', e);
   }
 }
 
 export function clearSettingsLogs(): void {
   pendingSettings = [];
   try { chrome.storage.local.set({ [SETTINGS_LOG_KEY]: [] }); } catch (e) {
-    console.error('[MTS] Failed to clear settings logs:', e);
+    console.error('[HC] Failed to clear settings logs:', e);
   }
 }
 
@@ -190,29 +190,29 @@ export function setDebugMode(enabled: boolean): void {
 // ── Extension log functions ─────────────────────────────────────────────
 
 export function log(message: string, data?: unknown): void {
-  console.log('[MTS]', message, data !== undefined ? data : '');
+  console.log('[HC]', message, data !== undefined ? data : '');
   addExtensionLog('log', message, data);
 }
 
 export function debug(message: string, data?: unknown): void {
   if (!debugMode) return;
-  console.log('[MTS DEBUG]', message, data !== undefined ? data : '');
+  console.log('[HC DEBUG]', message, data !== undefined ? data : '');
   addExtensionLog('debug', message, data);
 }
 
 export function error(message: string, data?: unknown): void {
-  console.error('[MTS ERROR]', message, data !== undefined ? data : '');
+  console.error('[HC ERROR]', message, data !== undefined ? data : '');
   addExtensionLog('error', message, data);
 }
 
 export function warn(message: string, data?: unknown): void {
-  console.warn('[MTS WARN]', message, data !== undefined ? data : '');
+  console.warn('[HC WARN]', message, data !== undefined ? data : '');
   addExtensionLog('warn', message, data);
 }
 
 // ── Settings log function ───────────────────────────────────────────────
 
 export function settingsLog(message: string, data?: unknown): void {
-  console.log('[MTS SETTINGS]', message, data !== undefined ? data : '');
+  console.log('[HC SETTINGS]', message, data !== undefined ? data : '');
   addSettingsLog(message, data);
 }

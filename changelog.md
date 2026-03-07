@@ -1,9 +1,23 @@
 # Changelog
 
-All notable changes to the Mindful Twitch Spending (MTS) extension will be documented in this file.
+All notable changes to the Hype Control (HC) extension will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [0.4.2] - 2026-03-06
+
+### Changed
+- **Logs page tab title** — Updated from "HC Logs" to "Hype Control Logs"
+
+---
+
+## [0.4.1] - 2026-03-06
+
+### Fixed
+- **Subscribe button price not detected** — `extractPrice` only checked `aria-label` for bits patterns, never for dollar prices. Subscribe buttons (e.g., "Subscribe: 15% off $30.55") have the price in their `aria-label` but only "Subscribe" in their `textContent`, causing "no price detected, skipping comparison steps." Now checks `aria-label` for dollar prices too, after the textContent check so existing detection is unaffected.
 
 ---
 
@@ -137,10 +151,10 @@ When thresholds are disabled, always shows the full modal with all comparisons.
 - **Split activity logs into two separate views**
   - **Extension Log** — tracks extension behavior and friction flow events: button interceptions, overlay displays, user decisions (Cancel/Proceed), cooldown triggers, daily cap warnings
   - **Settings Log** — tracks all settings changes: saves, resets, custom item additions/deletions
-  - Each log has its own storage key (`mtsExtensionLog`, `mtsSettingsLog`) and 200-entry limit
-  - Old `mtsLogs` key is retired (auto-cleared on version change)
+  - Each log has its own storage key (`hcExtensionLog`, `hcSettingsLog`) and 200-entry limit
+  - Old `hcLogs` key is retired (auto-cleared on version change)
 - **Tab switcher on logs page** — toggle between Extension Log and Settings Log views
-  - Styled with MTS purple theme (active tab highlighted)
+  - Styled with HC purple theme (active tab highlighted)
   - Refresh, Clear, and Copy to Clipboard buttons operate on the currently selected log
 
 ---
@@ -397,7 +411,7 @@ When thresholds are disabled, always shows the full modal with all comparisons.
 ### Fixed
 - **Added explicit allow-list for buttons that should NEVER be intercepted**
   - Close, Cancel, Back, Done, OK, Dismiss, Not Now, Maybe Later, No Thanks
-  - These buttons are now always allowed through without MTS overlay
+  - These buttons are now always allowed through without HC overlay
 
 ---
 
@@ -529,9 +543,9 @@ When thresholds are disabled, always shows the full modal with all comparisons.
 
 #### Developer Features
 - Debug mode with verbose console logging
-- `MTS.testOverlay()` - Test overlay without clicking a button
-- `MTS.scanButtons()` - Scan page for purchase-related buttons
-- Visual "MTS Active" badge on page load (auto-dismisses)
+- `HC.testOverlay()` - Test overlay without clicking a button
+- `HC.scanButtons()` - Scan page for purchase-related buttons
+- Visual "HC Active" badge on page load (auto-dismisses)
 
 #### Technical Details
 - TypeScript strict mode enabled

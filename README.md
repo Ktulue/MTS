@@ -1,10 +1,10 @@
-# MTS - Mindful Twitch Spending
+# Hype Control
 
 A Chrome extension that creates intentional friction before spending money on Twitch. Designed to promote mindful spending habits.
 
 ## Overview
 
-MTS intercepts Twitch checkout flows (gifting subs, subscribing, Bits purchases) and presents a series of prompts that:
+Hype Control intercepts Twitch checkout flows (gifting subs, subscribing, Bits purchases) and presents a series of prompts that:
 
 - Shows the **real cost** including sales tax
 - Converts the cost to **hours of work** based on your take-home pay
@@ -27,7 +27,7 @@ MTS intercepts Twitch checkout flows (gifting subs, subscribing, Bits purchases)
 
 ## Installation
 
-Available on the [Chrome Web Store](https://chromewebstore.google.com/detail/mindful-twitch-spending/).
+Available on the [Chrome Web Store](https://chromewebstore.google.com/detail/hype-control/).
 
 For development:
 1. Clone this repository
@@ -60,7 +60,7 @@ Click the extension icon (or right-click → Options) to open the settings page:
 ## Project Structure
 
 ```
-MTS/
+HypeControl/
 ├── manifest.json
 ├── package.json
 ├── assets/
@@ -87,7 +87,7 @@ MTS/
 
 ## Known Issues
 
-- **Bits promotional module** — The animated Bits gem/icon that Twitch displays on channel pages cannot currently be intercepted. MTS can intercept the "Get Bits" button in the top navigation bar, but the promotional overlay module uses a non-standard rendering path that doesn't expose a clickable element MTS can hook.
+- **Bits promotional module** — The animated Bits gem/icon that Twitch displays on channel pages cannot currently be intercepted. Hype Control can intercept the "Get Bits" button in the top navigation bar, but the promotional overlay module uses a non-standard rendering path that doesn't expose a clickable element Hype Control can hook.
 
 ## Contributing
 
@@ -110,6 +110,10 @@ Under the following conditions:
 You **cannot**:
 - ❌ Close-source this project or derivatives
 - ❌ Sell closed-source versions
+
+## Acknowledgments
+
+- **HolmsB** — For helping name the extension "Hype Control"
 
 ## Support
 

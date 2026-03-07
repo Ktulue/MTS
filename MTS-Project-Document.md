@@ -1,4 +1,4 @@
-# MTS - Mindful Twitch Spending
+# Hype Control (HC)
 
 ## Chrome Extension Project Document
 
@@ -416,7 +416,7 @@ The MVP is broken into 6 parts, each designed to be completed in roughly one str
 ### Prompt for Claude
 
 ```
-I'm building a Chrome extension called "Mindful Twitch Spending" using TypeScript
+I'm building a Chrome extension called "Hype Control" using TypeScript
 and Manifest V3. I need you to create the foundation which includes:
 
 1. A manifest.json configured for Manifest V3 that:
@@ -498,7 +498,7 @@ twitch-spending-guardian/
 ### Prompt for Claude
 
 ```
-I have the MVP foundation of my Mindful Twitch Spending extension working.
+I have the MVP foundation of my Hype Control extension working.
 Now I need to add an Options page where users can configure their settings.
 
 Create an options page that includes:
@@ -546,9 +546,9 @@ overlay styling from Part 1.
 
 ## 🎨 Icon Note: Community Contest Idea
 
-For MVP Parts 1-2, use **placeholder icons** (purple squares with "MTS" text or a simple shield shape). Claude Code can generate these.
+For MVP Parts 1-2, use **placeholder icons** (purple squares with "HC" text or a simple shield shape). Claude Code can generate these.
 
-**Later: "Design the MTS Icon" Community Contest**
+**Later: "Design the HC Icon" Community Contest**
 
 Once the extension is functional, engage your community:
 
@@ -577,7 +577,7 @@ This ties your community into the project — they're not just watching, they're
 - [x] Node.js installed
 - [x] VS Code with Cloak extension
 - [x] GitHub repo configured
-- [x] MTS folder ready for Claude Code
+- [x] Project folder ready for Claude Code
 - [ ] Chrome Developer Mode enabled (chrome://extensions → toggle top-right)
 - [ ] OBS visibility toggle hotkey ready
 
@@ -639,7 +639,7 @@ This ties your community into the project — they're not just watching, they're
 ### Prompt for Claude
 
 ```
-I need to add the calculation logic to my Mindful Twitch Spending.
+I need to add the calculation logic to my Hype Control.
 The overlay should show the TRUE cost of a purchase.
 
 Create a calculations.ts module that:
@@ -755,7 +755,7 @@ Make the work time formatting smart:
 ### Prompt for Claude
 
 ```
-I need to implement multi-step confirmation flows for my Mindful Twitch Spending.
+I need to implement multi-step confirmation flows for my Hype Control.
 The number of steps depends on the user's friction level setting.
 
 Update the extension to:
@@ -849,7 +849,7 @@ interface InterceptEvent {
 ### Prompt for Claude
 
 ```
-I want to add behavioral tracking to my Mindful Twitch Spending to help me
+I want to add behavioral tracking to my Hype Control to help me
 understand my spending patterns and where the friction is most effective.
 
 Implement:
@@ -968,7 +968,7 @@ async function shouldBypassFriction(settings: UserSettings): Promise<{
 ### Prompt for Claude
 
 ```
-I need to add Streaming Mode to my Mindful Twitch Spending so I can gift subs
+I need to add Streaming Mode to my Hype Control so I can gift subs
 to my own community while streaming without the friction overlay.
 
 Implement:
@@ -1102,7 +1102,7 @@ The toast notification should:
 ### Prompt for Claude
 
 ```
-I've completed all MVP parts of my Mindful Twitch Spending. Now I need help
+I've completed all MVP parts of my Hype Control. Now I need help
 with integration testing and polish.
 
 Please help me:
@@ -1149,7 +1149,7 @@ Please help me:
 
 # 🎉 MVP COMPLETE
 
-At this point, you have a **fully functional** Mindful Twitch Spending that:
+At this point, you have a **fully functional** Hype Control that:
 
 ✅ Detects purchase attempts on Twitch  
 ✅ Shows true cost (with tax, in work hours)  
@@ -1519,7 +1519,7 @@ const ohioTaxRates: Record<string, number> = {
 
 ## Known Issues
 
-- **Bits promotional module** — The animated Bits gem/icon that Twitch displays on channel pages cannot currently be intercepted. MTS can intercept the "Get Bits" button in the top navigation bar, but the promotional overlay module uses a non-standard rendering path that doesn't expose a clickable element MTS can hook.
+- **Bits promotional module** — The animated Bits gem/icon that Twitch displays on channel pages cannot currently be intercepted. Hype Control can intercept the "Get Bits" button in the top navigation bar, but the promotional overlay module uses a non-standard rendering path that doesn't expose a clickable element Hype Control can hook.
 
 ## Links & Resources
 

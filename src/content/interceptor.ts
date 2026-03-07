@@ -15,8 +15,8 @@ import { applyThemeToOverlay } from './themeManager';
 import { log, debug } from '../shared/logger';
 
 /** Storage keys */
-const SETTINGS_KEY = 'mtsSettings';
-const SPENDING_KEY = 'mtsSpending';
+const SETTINGS_KEY = 'hcSettings';
+const SPENDING_KEY = 'hcSpending';
 
 // ── Settings & Tracker ──────────────────────────────────────────────────
 
@@ -87,14 +87,14 @@ function checkWhitelist(channel: string, settings: UserSettings): WhitelistEntry
 }
 
 function showWhitelistReducedToast(channel: string, priceDisplay: string, durationMs: number): void {
-  document.getElementById('mts-whitelist-toast')?.remove();
+  document.getElementById('hc-whitelist-toast')?.remove();
   const toast = document.createElement('div');
-  toast.id = 'mts-whitelist-toast';
-  toast.className = 'mts-whitelist-toast';
+  toast.id = 'hc-whitelist-toast';
+  toast.className = 'hc-whitelist-toast';
   toast.textContent = `\u2705 Logged! ${priceDisplay} on ${channel} (whitelisted)`;
   document.body.appendChild(toast);
   setTimeout(() => {
-    toast.classList.add('mts-whitelist-toast--fade');
+    toast.classList.add('hc-whitelist-toast--fade');
     setTimeout(() => toast.remove(), 300);
   }, durationMs);
 }
@@ -241,9 +241,9 @@ function buildCostBreakdown(priceValue: number, settings: UserSettings, tracker:
     const newTotal = Math.round((tracker.dailyTotal + priceWithTax) * 100) / 100;
     const percentage = Math.round((newTotal / settings.dailyCap.amount) * 100);
     const overBudget = newTotal > settings.dailyCap.amount;
-    const dailyClass = overBudget ? 'mts-daily-over' : (percentage >= 80 ? 'mts-daily-warning' : '');
+    const dailyClass = overBudget ? 'hc-daily-over' : (percentage >= 80 ? 'hc-daily-warning' : '');
     dailyInfo = `
-      <p class="mts-daily-tracker ${dailyClass}">
+      <p class="hc-daily-tracker ${dailyClass}">
         Daily: $${newTotal.toFixed(2)} / $${settings.dailyCap.amount.toFixed(2)}
         ${overBudget ? ' \u2014 OVER BUDGET' : ` (${percentage}%)`}
       </p>
@@ -252,16 +252,16 @@ function buildCostBreakdown(priceValue: number, settings: UserSettings, tracker:
 
   let sessionInfo = '';
   if (tracker.sessionTotal > 0) {
-    sessionInfo = `<p class="mts-session-tracker">Session total: $${tracker.sessionTotal.toFixed(2)}</p>`;
+    sessionInfo = `<p class="hc-session-tracker">Session total: $${tracker.sessionTotal.toFixed(2)}</p>`;
   }
 
   return `
-    <div class="mts-cost-breakdown">
-      <p class="mts-cost-line">
-        <span class="mts-cost-label">With ${settings.taxRate}% tax:</span>
-        <span class="mts-cost-value">$${priceWithTax.toFixed(2)}</span>
+    <div class="hc-cost-breakdown">
+      <p class="hc-cost-line">
+        <span class="hc-cost-label">With ${settings.taxRate}% tax:</span>
+        <span class="hc-cost-value">$${priceWithTax.toFixed(2)}</span>
       </p>
-      <p class="mts-cost-line mts-cost-hours">
+      <p class="hc-cost-line hc-cost-hours">
         That's <strong>${formatWorkTime(hoursOfWork)}</strong> of work
       </p>
       ${dailyInfo}
@@ -338,7 +338,7 @@ function showModalPromise(overlay: HTMLElement, context?: ModalContext): Promise
         return;
       }
       if (e.key === 'Tab') {
-        const focusableButtons = Array.from(overlay.querySelectorAll<HTMLButtonElement>('.mts-btn'));
+        const focusableButtons = Array.from(overlay.querySelectorAll<HTMLButtonElement>('.hc-btn'));
         if (focusableButtons.length === 0) return;
         const first = focusableButtons[0];
         const last = focusableButtons[focusableButtons.length - 1];
@@ -376,40 +376,40 @@ async function showMainOverlay(
   if (attempt.priceValue !== null && attempt.priceValue > 0) {
     priceExtra = buildCostBreakdown(attempt.priceValue, settings, tracker);
   } else {
-    priceExtra = '<p class="mts-price-note">Unable to detect price. Proceed with caution.</p>';
+    priceExtra = '<p class="hc-price-note">Unable to detect price. Proceed with caution.</p>';
   }
 
   const overlay = document.createElement('div');
-  overlay.id = 'mts-overlay';
-  overlay.className = 'mts-overlay';
+  overlay.id = 'hc-overlay';
+  overlay.className = 'hc-overlay';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'mts-overlay-heading');
-  overlay.setAttribute('aria-describedby', 'mts-overlay-desc');
+  overlay.setAttribute('aria-labelledby', 'hc-overlay-heading');
+  overlay.setAttribute('aria-describedby', 'hc-overlay-desc');
   overlay.innerHTML = `
-    <div class="mts-modal">
-      <div class="mts-header">
-        <span class="mts-icon">\u{1F6E1}\uFE0F</span>
-        <h2 class="mts-title">Mindful Twitch Spending</h2>
+    <div class="hc-modal">
+      <div class="hc-header">
+        <span class="hc-icon">\u{1F6E1}\uFE0F</span>
+        <h2 class="hc-title">Hype Control</h2>
       </div>
-      <div class="mts-content">
-        ${whitelistNote ? `<div class="mts-whitelist-note">${whitelistNote}</div>` : ''}
-        <div class="mts-price-section" id="mts-overlay-desc">
-          <p class="mts-label" id="mts-overlay-heading">You're about to spend:</p>
-          <p class="mts-price">${priceDisplay}</p>
+      <div class="hc-content">
+        ${whitelistNote ? `<div class="hc-whitelist-note">${whitelistNote}</div>` : ''}
+        <div class="hc-price-section" id="hc-overlay-desc">
+          <p class="hc-label" id="hc-overlay-heading">You're about to spend:</p>
+          <p class="hc-price">${priceDisplay}</p>
           ${priceExtra}
         </div>
-        <div class="mts-info">
-          <p class="mts-channel">Channel: <strong>${attempt.channel}</strong></p>
-          <p class="mts-type">Type: <strong>${formatPurchaseType(attempt.type)}</strong></p>
+        <div class="hc-info">
+          <p class="hc-channel">Channel: <strong>${attempt.channel}</strong></p>
+          <p class="hc-type">Type: <strong>${formatPurchaseType(attempt.type)}</strong></p>
         </div>
-        <p class="mts-message">
+        <p class="hc-message">
           Take a moment to consider: Is this purchase intentional or impulsive?
         </p>
       </div>
-      <div class="mts-actions">
-        <button class="mts-btn mts-btn-cancel" data-action="cancel">Cancel</button>
-        <button class="mts-btn mts-btn-proceed" data-action="proceed">Proceed Anyway</button>
+      <div class="hc-actions">
+        <button class="hc-btn hc-btn-cancel" data-action="cancel">Cancel</button>
+        <button class="hc-btn hc-btn-proceed" data-action="proceed">Proceed Anyway</button>
       </div>
     </div>
   `;
@@ -437,30 +437,30 @@ async function showComparisonStep(
   overlayVisible = true;
 
   const overlay = document.createElement('div');
-  overlay.id = 'mts-overlay';
-  overlay.className = 'mts-overlay';
+  overlay.id = 'hc-overlay';
+  overlay.className = 'hc-overlay';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'mts-overlay-heading');
-  overlay.setAttribute('aria-describedby', 'mts-overlay-desc');
+  overlay.setAttribute('aria-labelledby', 'hc-overlay-heading');
+  overlay.setAttribute('aria-describedby', 'hc-overlay-desc');
   overlay.innerHTML = `
-    <div class="mts-modal">
-      <div class="mts-header">
-        <span class="mts-icon">${item.emoji}</span>
-        <h2 class="mts-title" id="mts-overlay-heading">STEP ${stepNumber} OF ${totalSteps}</h2>
+    <div class="hc-modal">
+      <div class="hc-header">
+        <span class="hc-icon">${item.emoji}</span>
+        <h2 class="hc-title" id="hc-overlay-heading">STEP ${stepNumber} OF ${totalSteps}</h2>
       </div>
-      <div class="mts-content">
-        <div class="mts-comparison-step" id="mts-overlay-desc">
-          <p class="mts-comparison-amount">${display.amountText}</p>
-          <p class="mts-comparison-label">${display.labelText}</p>
+      <div class="hc-content">
+        <div class="hc-comparison-step" id="hc-overlay-desc">
+          <p class="hc-comparison-amount">${display.amountText}</p>
+          <p class="hc-comparison-label">${display.labelText}</p>
         </div>
-        <p class="mts-message">
+        <p class="hc-message">
           <strong>${display.sentence}</strong>. Still want to proceed?
         </p>
       </div>
-      <div class="mts-actions">
-        <button class="mts-btn mts-btn-cancel" data-action="cancel">Cancel</button>
-        <button class="mts-btn mts-btn-proceed" data-action="proceed">Proceed Anyway</button>
+      <div class="hc-actions">
+        <button class="hc-btn hc-btn-cancel" data-action="cancel">Cancel</button>
+        <button class="hc-btn hc-btn-proceed" data-action="proceed">Proceed Anyway</button>
       </div>
     </div>
   `;
@@ -493,25 +493,25 @@ function showCooldownBlock(remainingMs: number): void {
   const previousFocus = document.activeElement as HTMLElement | null;
 
   const overlay = document.createElement('div');
-  overlay.id = 'mts-overlay';
-  overlay.className = 'mts-overlay';
+  overlay.id = 'hc-overlay';
+  overlay.className = 'hc-overlay';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'mts-overlay-heading');
-  overlay.setAttribute('aria-describedby', 'mts-overlay-desc');
+  overlay.setAttribute('aria-labelledby', 'hc-overlay-heading');
+  overlay.setAttribute('aria-describedby', 'hc-overlay-desc');
   overlay.innerHTML = `
-    <div class="mts-modal mts-cooldown-modal">
-      <div class="mts-header" style="background: linear-gradient(135deg, var(--mts-danger), var(--mts-danger-dark));">
-        <span class="mts-icon">\u231B</span>
-        <h2 class="mts-title" id="mts-overlay-heading">COOLDOWN ACTIVE</h2>
+    <div class="hc-modal hc-cooldown-modal">
+      <div class="hc-header" style="background: linear-gradient(135deg, var(--hc-danger), var(--hc-danger-dark));">
+        <span class="hc-icon">\u231B</span>
+        <h2 class="hc-title" id="hc-overlay-heading">COOLDOWN ACTIVE</h2>
       </div>
-      <div class="mts-content" id="mts-overlay-desc" style="text-align: center;">
-        <p class="mts-label">You recently made a purchase.</p>
-        <p class="mts-price" id="mts-cooldown-timer" style="font-size: 24px;">${formatCountdown(remainingMs)} remaining</p>
-        <p class="mts-message">Take a breather. This cooldown helps you avoid impulse spending.</p>
+      <div class="hc-content" id="hc-overlay-desc" style="text-align: center;">
+        <p class="hc-label">You recently made a purchase.</p>
+        <p class="hc-price" id="hc-cooldown-timer" style="font-size: 24px;">${formatCountdown(remainingMs)} remaining</p>
+        <p class="hc-message">Take a breather. This cooldown helps you avoid impulse spending.</p>
       </div>
-      <div class="mts-actions">
-        <button class="mts-btn mts-btn-cancel" data-action="cancel" style="flex: 1;">OK, I'll Wait</button>
+      <div class="hc-actions">
+        <button class="hc-btn hc-btn-cancel" data-action="cancel" style="flex: 1;">OK, I'll Wait</button>
       </div>
     </div>
   `;
@@ -538,7 +538,7 @@ function showCooldownBlock(remainingMs: number): void {
   document.addEventListener('keydown', handleKeydown);
 
   // Live countdown tick
-  const timerEl = overlay.querySelector('#mts-cooldown-timer') as HTMLElement;
+  const timerEl = overlay.querySelector('#hc-cooldown-timer') as HTMLElement;
   const btnEl = overlay.querySelector('[data-action="cancel"]') as HTMLButtonElement;
   intervalId = setInterval(() => {
     const left = expiresAt - Date.now();
@@ -640,31 +640,31 @@ async function runFrictionFlow(
 // ── Streaming Mode Toast ────────────────────────────────────────────────
 
 function showStreamingModeToast(channel: string, durationMs: number): void {
-  document.getElementById('mts-streaming-toast')?.remove();
+  document.getElementById('hc-streaming-toast')?.remove();
 
   const toast = document.createElement('div');
-  toast.id = 'mts-streaming-toast';
-  toast.className = 'mts-streaming-toast';
+  toast.id = 'hc-streaming-toast';
+  toast.className = 'hc-streaming-toast';
   toast.textContent = `🔴 LIVE — Streaming mode active on ${channel}`;
   document.body.appendChild(toast);
 
   setTimeout(() => {
-    toast.classList.add('mts-streaming-toast--fade');
+    toast.classList.add('hc-streaming-toast--fade');
     setTimeout(() => toast.remove(), 300);
   }, durationMs);
 }
 
 function showDailyBudgetToast(remaining: number, capAmount: number, durationMs: number): void {
-  document.getElementById('mts-budget-toast')?.remove();
+  document.getElementById('hc-budget-toast')?.remove();
 
   const toast = document.createElement('div');
-  toast.id = 'mts-budget-toast';
-  toast.className = 'mts-budget-toast';
+  toast.id = 'hc-budget-toast';
+  toast.className = 'hc-budget-toast';
   toast.textContent = `✅ $${remaining.toFixed(2)} remaining of $${capAmount.toFixed(2)} daily budget`;
   document.body.appendChild(toast);
 
   setTimeout(() => {
-    toast.classList.add('mts-budget-toast--fade');
+    toast.classList.add('hc-budget-toast--fade');
     setTimeout(() => toast.remove(), 300);
   }, durationMs);
 }
